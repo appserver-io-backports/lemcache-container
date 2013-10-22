@@ -95,37 +95,6 @@ class Worker extends AbstractContextThread
         return 'TechDivision\Socket';
     }
 
-
-
-    /**
-     *
-     * @see \Thread::run()
-     */
-    public function main_old()
-    {
-        while (true) {
-
-            // reinitialize the server socket
-            $serverSocket = $this->initialContext->newInstance($this->getResourceClass(), array(
-                $this->resource
-            ));
-
-            // accept client connection and process the request
-            if ($clientSocket = $serverSocket->accept()) {
-
-                $params = array(
-                    $this->initialContext,
-                    $this->container,
-                    $clientSocket->getResource(),
-                    $this->store,
-                    $this->mutex
-                );
-                $request = $this->initialContext->newInstance($this->threadType, $params);
-                $request->start();
-            }
-        }
-    }
-
     /**
      *
      * @see \Thread::run()
