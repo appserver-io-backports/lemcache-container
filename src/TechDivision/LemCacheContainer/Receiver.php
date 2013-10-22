@@ -81,12 +81,8 @@ class Receiver extends AbstractReceiver
                 while ($worker ++ < $this->getWorkerNumber()) {
                     $params = array($this->initialContext, $this->getContainer(), $socket->getResource(), $this->getThreadType(), $this->getStore(), $this->getMutex());
 
-
                     $workers[$worker] = $this->newInstance($this->getWorkerType(), $params );
                     $workers[$worker]->start();
-
-                    #$workers[$worker] = $this->newWorker($socket->getResource());
-                    // start thread async
 
                 }
 

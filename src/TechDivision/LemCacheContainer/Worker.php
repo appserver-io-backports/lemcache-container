@@ -104,7 +104,6 @@ class Worker extends AbstractContextThread
         // create memcache api object
         $api = $this->newInstance('TechDivision\LemCacheContainer\Api\MemCache', array($this->store, $this->mutex));
 
-
         while (true) {
 
             // reinitialize the server socket
