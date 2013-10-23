@@ -86,6 +86,9 @@ class Receiver extends AbstractReceiver
 
                 }
 
+                //start garbageCollctor Thread
+                $gc = $this->newInstance("TechDivision\LemCacheContainer\GarbageCollector", array($this->store, $this->mutex) );
+                $gc->start();
                 return true;
             }
 

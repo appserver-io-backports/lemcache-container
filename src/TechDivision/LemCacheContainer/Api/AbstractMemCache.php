@@ -33,9 +33,16 @@ class AbstractMemCache
 
     /**
      * Prefix for saving multiple keys inside one Stackable
-     *
+     *@var string
      */
     protected $storePrefix = "0-";
+
+    /**
+     * keeps the GarbageCollector Prefix Value
+     *
+     * @var string
+     */
+    protected $gcPrefix = "1";
 
     /**
      * keeps response text that will sent to client after finish processing request
@@ -310,6 +317,18 @@ class AbstractMemCache
     }
 
     /**
+     * returns GarbageCollector Prefix
+     *
+     * @return string
+     */
+    protected function getGCPrefix()
+    {
+        return $this->gcPrefix;
+    }
+
+
+
+    /**
      * getting Values from $store
      *
      * @param string $key
@@ -354,8 +373,9 @@ class AbstractMemCache
 
         \Mutex::lock($this->mutex);
         $this->store[$this->getStorePrefix().$key] = $ar;
+        // add for every new entry a GarbageCollector Entry - another Thread will keep a eye on it
+        $this->store["1"][$key] = $exptime;
         \Mutex::unlock($this->mutex);
-        var_dump($this->store);
         return TRUE;
     }
 
