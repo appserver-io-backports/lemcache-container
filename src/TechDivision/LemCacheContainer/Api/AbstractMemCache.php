@@ -30,6 +30,13 @@ class AbstractMemCache
      */
     protected $newLine="\r\n";
 
+
+    /**
+     * Prefix for saving multiple keys inside one Stackable
+     *
+     */
+    protected $storePrefix = "0-";
+
     /**
      * keeps response text that will sent to client after finish processing request
      *
@@ -292,6 +299,15 @@ class AbstractMemCache
         $this->action = true;
     }
 
+    /**
+     * get string $storePrefix
+     *
+     * @return string
+     */
+    protected function getStorePrefix()
+    {
+        return $this->storePrefix;
+    }
 
     /**
      * getting Values from $store
@@ -301,20 +317,19 @@ class AbstractMemCache
      */
     protected function StoreGet($key)
     {
+        var_dump($this->store);
         $result = "";
-
-        if ($this->store[$key]) {
-
-            \Mutex::lock($this->mutex);
-            $s = $this->store[$key];
-            \Mutex::unlock($this->mutex);
-
+        \Mutex::lock($this->mutex);
+        $s = $this->store[$this->getStorePrefix().$key];
+        \Mutex::unlock($this->mutex);
+        if ($s) {
             $result = "VALUE ".$s['key']." ";
             $result .= $s['flags']." ";
             $result .= $s['bytes'].$this->getNewLine();
             $result .= $s['value'].$this->getNewLine();
         }
         $result .= "END";
+
         return $result;
     }
 
@@ -330,6 +345,7 @@ class AbstractMemCache
      */
     protected function StoreSet($key, $flags, $exptime, $bytes, $value)
     {
+        $ar = array();
         $ar['key'] = $key;
         $ar['flags'] = $flags;
         $ar['exptime'] = $exptime;
@@ -337,9 +353,9 @@ class AbstractMemCache
         $ar['value'] = $value;
 
         \Mutex::lock($this->mutex);
-        $this->store[$key] = $ar;
+        $this->store[$this->getStorePrefix().$key] = $ar;
         \Mutex::unlock($this->mutex);
-
+        var_dump($this->store);
         return TRUE;
     }
 
@@ -351,16 +367,14 @@ class AbstractMemCache
      */
     protected function StoreDelete($key)
     {
-        if ($this->store['key']) {
-
-            \Mutex::lock($this->mutex);
-            unset($this->store['key']);
-            \Mutex::unlock($this->mutex);
-
+        \Mutex::lock($this->mutex);
+        if ($this->store[$this->getStorePrefix().$key]) {
+            unset($this->store[$this->getStorePrefix().$key]);
             $result = "DELETED";
         } else {
             $result = "NOT_FOUND";
         }
+        \Mutex::unlock($this->mutex);
         return $result;
     }
 }

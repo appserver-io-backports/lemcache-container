@@ -47,6 +47,7 @@ class MemCache extends AbstractMemCache
     public function __construct($store, $mutex)
     {
         $this->store = $store;
+        $this->store[0] = array();
         $this->mutex = $mutex;
     }
 
