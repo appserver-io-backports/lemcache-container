@@ -60,6 +60,8 @@ class Receiver extends AbstractReceiver
             // create new Store Object
             $this->store = new Store;
 
+            $this->store['1'] = array();
+
             //create Mutex for KeyValueStore
             $this->mutex = \Mutex::create(false);
 
@@ -86,6 +88,9 @@ class Receiver extends AbstractReceiver
 
                 }
 
+                //start garbageCollctor Thread
+                $gc = $this->newInstance("TechDivision\LemCacheContainer\GarbageCollector", array($this->store, $this->mutex) );
+                $gc->start();
                 return true;
             }
 

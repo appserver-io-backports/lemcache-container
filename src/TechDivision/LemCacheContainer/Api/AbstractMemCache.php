@@ -30,6 +30,20 @@ class AbstractMemCache
      */
     protected $newLine="\r\n";
 
+
+    /**
+     * Prefix for saving multiple keys inside one Stackable
+     *@var string
+     */
+    protected $storePrefix = "0-";
+
+    /**
+     * keeps the GarbageCollector Prefix Value
+     *
+     * @var string
+     */
+    protected $gcPrefix = "1";
+
     /**
      * keeps response text that will sent to client after finish processing request
      *
@@ -292,6 +306,27 @@ class AbstractMemCache
         $this->action = true;
     }
 
+    /**
+     * get string $storePrefix
+     *
+     * @return string
+     */
+    protected function getStorePrefix()
+    {
+        return $this->storePrefix;
+    }
+
+    /**
+     * returns GarbageCollector Prefix
+     *
+     * @return string
+     */
+    protected function getGCPrefix()
+    {
+        return $this->gcPrefix;
+    }
+
+
 
     /**
      * getting Values from $store
@@ -302,19 +337,17 @@ class AbstractMemCache
     protected function StoreGet($key)
     {
         $result = "";
-
-        if ($this->store[$key]) {
-
-            \Mutex::lock($this->mutex);
-            $s = $this->store[$key];
-            \Mutex::unlock($this->mutex);
-
+        \Mutex::lock($this->mutex);
+        $s = $this->store[$this->getStorePrefix().$key];
+        \Mutex::unlock($this->mutex);
+        if ($s) {
             $result = "VALUE ".$s['key']." ";
             $result .= $s['flags']." ";
             $result .= $s['bytes'].$this->getNewLine();
             $result .= $s['value'].$this->getNewLine();
         }
         $result .= "END";
+
         return $result;
     }
 
@@ -330,6 +363,7 @@ class AbstractMemCache
      */
     protected function StoreSet($key, $flags, $exptime, $bytes, $value)
     {
+        $ar = array();
         $ar['key'] = $key;
         $ar['flags'] = $flags;
         $ar['exptime'] = $exptime;
@@ -337,9 +371,13 @@ class AbstractMemCache
         $ar['value'] = $value;
 
         \Mutex::lock($this->mutex);
-        $this->store[$key] = $ar;
+        $this->store[$this->getStorePrefix().$key] = $ar;
+        // add for every new entry a GarbageCollector Entry - another Thread will keep a eye on it
+        //@fixme: ugly code cause of Problems with Stackable array....
+        $invalidator = $this->store['1'];
+        $invalidator[$key] = $exptime;
+        $this->store['1'] = $invalidator;
         \Mutex::unlock($this->mutex);
-
         return TRUE;
     }
 
@@ -351,16 +389,14 @@ class AbstractMemCache
      */
     protected function StoreDelete($key)
     {
-        if ($this->store['key']) {
-
-            \Mutex::lock($this->mutex);
-            unset($this->store['key']);
-            \Mutex::unlock($this->mutex);
-
+        \Mutex::lock($this->mutex);
+        if ($this->store[$this->getStorePrefix().$key]) {
+            unset($this->store[$this->getStorePrefix().$key]);
             $result = "DELETED";
         } else {
             $result = "NOT_FOUND";
         }
+        \Mutex::unlock($this->mutex);
         return $result;
     }
 }
