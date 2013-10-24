@@ -38,7 +38,7 @@ class GarbageCollector extends \Thread {
 
     protected $GCPrefix = "1";
 
-    protected $invalidationArray = array();
+    protected $invalidationArray;
 
 
     /**
@@ -52,6 +52,8 @@ class GarbageCollector extends \Thread {
     {
         $this->store = $store;
         $this->mutex = $mutex;
+        $this->invalidationArray = array();
+        $this->storePrefix = "0-";
 
         \Mutex::lock($this->mutex);
         $this->store[$this->getGCPrefix()] = array();
@@ -79,33 +81,37 @@ class GarbageCollector extends \Thread {
         while (true) {
             $startTime = microtime();
             $curTime = time();
-            #echo "Currenttime: ".$curTime."\n";
             \Mutex::lock($this->mutex);
-            //hack
+            //save all values in "Invalidation" SubStore inside our Stackable
             $ar = $this->store["1"];
-            var_dump($ar);
+            //delete all values in our Invalidation SubStore
             $this->store["1"] = array();
             \Mutex::unlock($this->mutex);
-            $asd = $this->getInvalidationArray()[$curTime];
+
+            #var_dump($this->invalidationArray);
+            $asd = $this->invalidationArray[$curTime];
             if (is_array($asd)) {
                 foreach ($asd as $row){
                     \Mutex::lock($this->mutex);
                     unset($this->store[$this->getStorePrefix().$row]);
                     \Mutex::unlock($this->mutex);
-                    var_dump("loesche key: ".$row );
+                    error_log("key ".$row." deleted...");
                 }
-
             }
 
             if (is_array($ar)) {
                 foreach ($ar as $key=>$value) {
-                    $targetTime = $curTime + (int)$value;
-                    #echo "TargetTime: ".$targetTime."\n";
-                    $this->getInvalidationArray()[$targetTime][] = $key;
+                    if ($value != "0") {
+                        $targetTime = $curTime + (int)$value;
+                        $tmpar = $this->invalidationArray;
+                        if (!$tmpar[$targetTime]) {
+                            $tmpar[$targetTime] = array();
+                        }
+                        $tmpar[$targetTime][] = $key;
+                        $this->invalidationArray = $tmpar;
+                    }
                 }
             }
-
-
 
 
 

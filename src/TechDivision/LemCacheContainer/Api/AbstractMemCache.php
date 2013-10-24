@@ -336,7 +336,6 @@ class AbstractMemCache
      */
     protected function StoreGet($key)
     {
-        var_dump($this->store);
         $result = "";
         \Mutex::lock($this->mutex);
         $s = $this->store[$this->getStorePrefix().$key];
@@ -374,7 +373,10 @@ class AbstractMemCache
         \Mutex::lock($this->mutex);
         $this->store[$this->getStorePrefix().$key] = $ar;
         // add for every new entry a GarbageCollector Entry - another Thread will keep a eye on it
-        $this->store["1"][$key] = $exptime;
+        //@fixme: ugly code cause of Problems with Stackable array....
+        $invalidator = $this->store['1'];
+        $invalidator[$key] = $exptime;
+        $this->store['1'] = $invalidator;
         \Mutex::unlock($this->mutex);
         return TRUE;
     }

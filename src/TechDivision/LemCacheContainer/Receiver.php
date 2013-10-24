@@ -60,6 +60,8 @@ class Receiver extends AbstractReceiver
             // create new Store Object
             $this->store = new Store;
 
+            $this->store['1'] = array();
+
             //create Mutex for KeyValueStore
             $this->mutex = \Mutex::create(false);
 
