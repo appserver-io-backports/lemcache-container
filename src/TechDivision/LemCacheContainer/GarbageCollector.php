@@ -79,7 +79,7 @@ class GarbageCollector extends \Thread {
     public function run()
     {
         while (true) {
-            $startTime = microtime();
+            $startTime = microtime(true);
             $curTime = time();
             \Mutex::lock($this->mutex);
             //save all values in "Invalidation" SubStore inside our Stackable
@@ -112,16 +112,24 @@ class GarbageCollector extends \Thread {
                     }
                 }
             }
-
-
-
-            sleep(1);
-            $endTime = microtime();
+            $finishTime = microtime(true);
+            $sleepTime = $this->calculateDeltaTime($startTime, $finishTime);
+            usleep($sleepTime);
         }
     }
 
     protected function getInvalidationArray()
     {
         return $this->invalidationArray;
+    }
+
+    protected function calculateDeltaTime($startTime, $finishTime)
+    {
+        $diffTime = $finishTime - $startTime;
+        $deltaTime = (float)1 - $diffTime;
+        $deltaTime = floor($deltaTime*1000000);
+        $deltaTime = (int)$deltaTime+1;
+
+        return $deltaTime;
     }
 }
