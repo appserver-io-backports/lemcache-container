@@ -36,45 +36,44 @@ class GarbageCollector extends \Thread {
      */
     public $mutex;
 
-    protected $GCPrefix = "1";
-
+    /**
+     * Holds timestamp and key for invalidataion of entrys
+     *
+     * @var array
+     */
     protected $invalidationArray;
-
 
     /**
      * Prefix for saving multiple keys inside one Stackable
      *@var string
      */
-    protected $storePrefix = "0-";
+    protected $storePrefix;
 
 
+    /**
+     * GarbageCollector Prefix for Saving multiple instances in one StackableArray
+     *
+     * @var string
+     */
+    protected $GCPrefix;
+
+    /**
+     *
+     * @param $store
+     * @param $mutex
+     */
     public function __construct($store, $mutex)
     {
         $this->store = $store;
         $this->mutex = $mutex;
         $this->invalidationArray = array();
         $this->storePrefix = "0-";
+        $this->GCPrefix = "1-";
 
         \Mutex::lock($this->mutex);
         $this->store[$this->getGCPrefix()] = array();
         \Mutex::unlock($this->mutex);
     }
-
-    protected function getGCPrefix()
-    {
-        return $this->GCPrefix;
-    }
-
-    /**
-     * get string $storePrefix
-     *
-     * @return string
-     */
-    protected function getStorePrefix()
-    {
-        return $this->storePrefix;
-    }
-
 
     public function run()
     {
@@ -118,18 +117,60 @@ class GarbageCollector extends \Thread {
         }
     }
 
-    protected function getInvalidationArray()
-    {
-        return $this->invalidationArray;
-    }
-
+    /**
+     * Calculate difference between these Timestamaps, an substract
+     *
+     * @param float $startTime
+     * @param float $finishTime
+     * @return int
+     */
     protected function calculateDeltaTime($startTime, $finishTime)
     {
         $diffTime = $finishTime - $startTime;
-        $deltaTime = (float)1 - $diffTime;
+        $roundedDiffTime = (float)ceil($diffTime);
+        // we don't expect a longer runtime than 1 second
+        // if we hit dies value we return FALSE and our loop will run immediatly again
+        if($roundedDiffTime > 1)
+        {
+            error_log("GarbageCollector is runnen longer than 1 Second!");
+            return FALSE;
+        }
+
+        $deltaTime = $roundedDiffTime - $diffTime;
         $deltaTime = floor($deltaTime*1000000);
+        // add 1 microsecnd (perhaps usful)
         $deltaTime = (int)$deltaTime+1;
 
         return $deltaTime;
+    }
+
+    /**
+     * return GarbageCollector Prefix
+     *
+     * @return string
+     */
+    protected function getGCPrefix()
+    {
+        return $this->GCPrefix;
+    }
+
+    /**
+     * get string $storePrefix
+     *
+     * @return string
+     */
+    protected function getStorePrefix()
+    {
+        return $this->storePrefix;
+    }
+
+    /**
+     * return invalidationArray
+     *
+     * @return array
+     */
+    protected function getInvalidationArray()
+    {
+        return $this->invalidationArray;
     }
 }

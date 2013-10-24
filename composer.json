@@ -1,12 +1,12 @@
 {
-    "name": "techdivision/lemcache",
-    "description": "MemCache Implementation in PHp",
-    "homepage": "https://github.com/techdivision/TechDivision_Stream",
+    "name": "techdivision/lemcachecontainer",
+    "description": "A memcache API compatible PHP implementation of a key value storage server",
+    "homepage": "https://github.com/techdivision/TechDivision_LemCacheContainer",
     "license": ["OSL-3.0"],
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/techdivision/TechDivision_LemCache"
+            "url": "https://github.com/techdivision/TechDivision_LemCacheContainer"
         }
     ],
     "require": {
