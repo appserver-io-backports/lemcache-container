@@ -102,24 +102,6 @@ class AbstractMemCache
     protected $key = "";
 
     /**
-     * reset all attributes for reusing object
-     *
-     * @return void
-     */
-    public function reset()
-    {
-        $this->newLine="\r\n";
-        $this->response = "";
-        $this->state = "";
-        $this->action = FALSE;
-        $this->flags = 0;
-        $this->expTime = 0;
-        $this->bytes = 0;
-        $this->data = "";
-        $this->key = "";
-    }
-
-    /**
      * Get $response
      *
      * @return string
@@ -326,7 +308,23 @@ class AbstractMemCache
         return $this->gcPrefix;
     }
 
-
+    /**
+     * reset all attributes for reusing object
+     *
+     * @return void
+     */
+    public function reset()
+    {
+        $this->newLine="\r\n";
+        $this->response = "";
+        $this->state = "";
+        $this->action = FALSE;
+        $this->flags = 0;
+        $this->expTime = 0;
+        $this->bytes = 0;
+        $this->data = "";
+        $this->key = "";
+    }
 
     /**
      * getting Values from $store
@@ -374,9 +372,9 @@ class AbstractMemCache
         $this->store[$this->getStorePrefix().$key] = $ar;
         // add for every new entry a GarbageCollector Entry - another Thread will keep a eye on it
         //@fixme: ugly code cause of Problems with Stackable array....
-        $invalidator = $this->store['1'];
+        $invalidator = $this->store[$this->getGCPrefix()];
         $invalidator[$key] = $exptime;
-        $this->store['1'] = $invalidator;
+        $this->store[$this->getGCPrefix()] = $invalidator;
         \Mutex::unlock($this->mutex);
         return TRUE;
     }

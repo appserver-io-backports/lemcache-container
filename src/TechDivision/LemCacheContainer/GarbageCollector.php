@@ -68,13 +68,18 @@ class GarbageCollector extends \Thread {
         $this->mutex = $mutex;
         $this->invalidationArray = array();
         $this->storePrefix = "0-";
-        $this->GCPrefix = "1-";
+        $this->GCPrefix = "1";
 
         \Mutex::lock($this->mutex);
         $this->store[$this->getGCPrefix()] = array();
         \Mutex::unlock($this->mutex);
     }
 
+    /**
+     * This Method is called wenn thread is started
+     *
+     * @return void
+     */
     public function run()
     {
         while (true) {
@@ -82,9 +87,9 @@ class GarbageCollector extends \Thread {
             $curTime = time();
             \Mutex::lock($this->mutex);
             //save all values in "Invalidation" SubStore inside our Stackable
-            $ar = $this->store["1"];
+            $ar = $this->store[$this->getGCPrefix()];
             //delete all values in our Invalidation SubStore
-            $this->store["1"] = array();
+            $this->store[$this->getGCPrefix()] = array();
             \Mutex::unlock($this->mutex);
 
             #var_dump($this->invalidationArray);
@@ -118,7 +123,7 @@ class GarbageCollector extends \Thread {
     }
 
     /**
-     * Calculate difference between these Timestamaps, an substract
+     * Calculate difference between these Timestamaps, an substract it from rounded up value of it self
      *
      * @param float $startTime
      * @param float $finishTime
@@ -129,16 +134,17 @@ class GarbageCollector extends \Thread {
         $diffTime = $finishTime - $startTime;
         $roundedDiffTime = (float)ceil($diffTime);
         // we don't expect a longer runtime than 1 second
-        // if we hit dies value we return FALSE and our loop will run immediatly again
+        // if we hit this value we return FALSE and our loop will run immediately again
         if($roundedDiffTime > 1)
         {
-            error_log("GarbageCollector is runnen longer than 1 Second!");
+            error_log("GarbageCollector is running longer than 1 Second!");
             return FALSE;
         }
 
         $deltaTime = $roundedDiffTime - $diffTime;
+        // we need a integer microsecond value (1 million = 1 Second)
         $deltaTime = floor($deltaTime*1000000);
-        // add 1 microsecnd (perhaps usful)
+        // add 1 microsecond (perhaps useful)
         $deltaTime = (int)$deltaTime+1;
 
         return $deltaTime;

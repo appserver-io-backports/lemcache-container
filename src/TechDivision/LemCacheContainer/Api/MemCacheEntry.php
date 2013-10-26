@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision\LemCacheContainer\Api\MemCache
+ * TechDivision\LemCacheContainer\Api\MemCacheEntry
  *
  * NOTICE OF LICENSE
  *
@@ -13,12 +13,10 @@
 
 namespace TechDivision\LemCacheContainer\Api;
 
-use TechDivision\Socket\Client;
-use TechDivision\LemCacheContainer\Api\AbstractMemCache;
+use TechDivision\LemCacheContainer\Api\AbstractMemCacheEntry;
 
 
 /**
- * The http client implementation that handles the request like a webserver
  *
  * @package     TechDivision\LemCacheContainer
  * @copyright  	Copyright (c) 2013 <info@techdivision.com> - TechDivision GmbH
@@ -28,31 +26,11 @@ use TechDivision\LemCacheContainer\Api\AbstractMemCache;
  */
 
 
-class MemCache extends AbstractMemCache
+class MemCacheEntry extends AbstractMemCacheEntry
 {
-    /**
-     * StackableArray for sharing data between threads
-     *
-     * @var array
-     */
-    public $store;
 
     /**
-     * Mutex for keeping Data inside $store valid
-     *
-     * @var int
-     */
-    public $mutex;
-
-    public function __construct($store, $mutex)
-    {
-        $this->store = $store;
-        $this->store[0] = array();
-        $this->mutex = $mutex;
-    }
-
-    /**
-     * central Method for pushing data into api-object
+     * central Method for pushing data into vo-object
      *
      * @param string $request
      * @return void
@@ -79,15 +57,12 @@ class MemCache extends AbstractMemCache
                         $this->QuitAction($var);
                         break;
                     default:
-                        $this->setState("reset");
-                        $this->setResponse("ERROR");
+                        $this->setValidity(FALSE);
                         break;
                 }
                 unset($var);
             } else {
-                
-                $this->setState("reset");
-                $this->setResponse("ERROR");
+                $this->setValidity(FALSE);
             }
         }
     }
@@ -151,16 +126,11 @@ class MemCache extends AbstractMemCache
                     throw new \Exception("CLIENT_ERROR bad data chunk");
                 }
 
-                $this->setState("resume");
-                $this->setResponse("");
-
                 if ($request['data']) {
-
                     $this->pushData($request['data']);
                 }
 
         } catch (\Exception $e) {
-            $this->setState("resume");
             $this->setResponse($e->getMessage());
         }
     }
@@ -173,13 +143,9 @@ class MemCache extends AbstractMemCache
      */
     protected function GetAction($request)
     {
-        $key = $request[1];
-        // read response from Store
-        $response = $this->StoreGet($key);
-        // api object should deleted after sending response to client
-        $this->setState("reset");
-        // set Response for client communication
-        $this->setResponse($response);
+        $this->setKey($request[1]);
+        $this->SetRequestAction('get');
+        $this->setComplete(TRUE);
     }
 
     /**
@@ -190,13 +156,9 @@ class MemCache extends AbstractMemCache
      */
     protected function DeleteAction($request)
     {
-        $key = $request[1];
-        // read response from Store
-        $response = $this->StoreDelete($key);
-        // api object should deleted after sending response to client
-        $this->setState("reset");
-        // set Response for client communication
-        $this->setResponse($response);
+        $this->setKey($request[1]);
+        $this->SetRequestAction('delete');
+        $this->setComplete(TRUE);
     }
 
     protected function AddAction($request)
@@ -265,7 +227,7 @@ class MemCache extends AbstractMemCache
      * @return void
      */
     protected function pushData($data)
-    {
+    { 
         if ($data == $this->getNewline() && strlen($this->getData()) == $this->getBytes()) {
             $this->StoreSet($this->getKey(), $this->getFlags(), $this->getExpTime(), $this->getBytes(), $this->getData());
             $this->setState("reset");
