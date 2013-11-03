@@ -34,41 +34,40 @@ class AbstractMemCacheEntry
      *
      * @var bool
      */
-    protected $action = FALSE;
+    protected $action;
 
     /**
      * Holds completion state of the Request
      *
      */
-    protected $complete = FALSE;
-
-    /**
-     * Holds validity State of the Request
-     *
-     */
-    protected $valid = TRUE;
+    protected $complete;
 
     /**
      * MemCache Flag Value (enable/disable compression)
      *
      * @var int
      */
-    protected $flags = 0;
+    protected $flags;
 
     /**
      * Seconds after a Enty is InValid
      *
      * @var int
      */
-    protected $expTime = 0;
+    protected $expTime;
 
     /**
      * Value length in bytes
      *
      * @var int
      */
-    protected $bytes = 0;
+    protected $bytes;
 
+    /**
+     * Holds MemCache CommandAction for this Request (e.g. "set")
+     *
+     * @var string
+     */
     protected $requestAction;
 
     /**
@@ -76,27 +75,49 @@ class AbstractMemCacheEntry
      *
      * @var string
      */
-    protected $data = "";
+    protected $data;
 
     /**
      * holds "key"
      *
      * @var string
      */
-    protected $key = "";
+    protected $key;
 
     /**
      * keeps string representing a NEWLINE
      *
      * @var string
      */
-    protected $newLine="\r\n";
+    protected $newLine;
 
     /**
-     * get $newLine
+     * Constructor
      *
-     * @return string
      */
+    public function __construct()
+    {
+        //resets all attributes to default values
+        $this->reset();
+    }
+
+    /**
+     * resets all Attributes to default
+     *
+     * @return void
+     */
+    protected function reset()
+    {
+        $this->response = "";
+        $this->complete = FALSE;
+        $this->flags = 0;
+        $this->expTime = 0;
+        $this->bytes = 0;
+        $this->requestAction = "";
+        $this->data = "";
+        $this->key = "";
+        $this->newLine="\r\n";
+    }
 
     /**
      * set $data ("value")
@@ -120,27 +141,6 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * Get $response
-     *
-     * @return string
-     */
-    public function getResponse()
-    {
-        return $this->response;
-    }
-
-    /**
-     * Set $response
-     *
-     * @param $response
-     * @return void
-     */
-    protected function setResponse($response)
-    {
-        $this->response = $response;
-    }
-
-    /**
      * set $flags
      *
      * @param $flags
@@ -161,17 +161,26 @@ class AbstractMemCacheEntry
         return $this->flags;
     }
 
+    /**
+     * set RequestAction
+     *
+     * @param $value
+     * @return void
+     */
     protected function setRequestAction($value)
     {
         $this->requestAction = $value;
     }
 
+    /**
+     * get RequestAction
+     *
+     * @return string
+     */
     public function getRequestAction()
     {
         return $this->requestAction;
     }
-
-
 
     /**
      * set $bytes
@@ -193,7 +202,6 @@ class AbstractMemCacheEntry
     {
         return $this->bytes;
     }
-
 
     /**
      * set $bytes
@@ -237,46 +245,34 @@ class AbstractMemCacheEntry
         return $this->expTime;
     }
 
+    /**
+     * NewLine Value
+     *
+     * @return string
+     */
     protected function getNewLine()
     {
         return $this->newLine;
     }
 
-    protected function isAction()
-    {
-        return $this->action;
-    }
-
     /**
-     * Set $action attribute to TRUE (disabling is not important)
+     * Set Request state (TRUE|FALSE)
      *
+     * @param $value bool
      * @return void
-     */
-    protected function SetIsAction()
-    {
-        $this->action = true;
-    }
-
-    /**
-     * @param $value
      */
     protected function setComplete($value)
     {
         $this->complete = $value;
     }
 
+    /**
+     * get current request state
+     *
+     * @return mixed
+     */
     protected function getComplete()
     {
         return $this->complete;
-    }
-
-    protected function setValidity($value)
-    {
-        $this->valid = $value;
-    }
-
-    protected function getValidity()
-    {
-        return $this->valid;
     }
 }

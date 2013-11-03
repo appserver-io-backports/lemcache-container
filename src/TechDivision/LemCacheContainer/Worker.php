@@ -124,39 +124,46 @@ class Worker extends AbstractContextThread
                 $client->setResource($clientSocket->getResource());
 
                 while (true) {
+                    try {
+                        // read client message
+                        $message = $client->receive();
 
-                    // read client message
-                    $message = $client->receive();
+                        // push message into ValueObject
+                        $vo->push($message);
 
-                    // push message into ValueObject
-                    $vo->push($message);
+                        if ($vo->isComplete()) {
+                            $api->request($vo);
 
-                    if ($vo->isComplete()) {
-                        $api->setRequest($vo);
+                            // send response to client (even if response is empty)
+                            $this->send($client, $api->getResponse());
 
-                        // send response to client (even if response is empty)
-                        $this->send($client, $api->getResponse());
-
-                        // select current state
-                        switch ($api->getState()) {
-                            case "resume";
-                                break;
-                            case "reset";
-                                $api->reset();
-                                break;
-                            case "close":
-                                $api->reset();
-                                try {
-                                    $client->shutdown();
-                                    $client->close();
-                                } catch (\Exception $e) {
-                                    $client->close();
-                                }
-                                unset($client);
-                                break 2;
-                            default:
-                                $this->send($client, "SERVER ERROR unknown state");
+                            // select current state
+                            switch ($api->getState()) {
+                                case "resume";
+                                    break;
+                                case "reset";
+                                    $api->reset();
+                                    break;
+                                case "close":
+                                    $api->reset();
+                                    try {
+                                        $client->shutdown();
+                                        $client->close();
+                                    } catch (\Exception $e) {
+                                        $client->close();
+                                    }
+                                    unset($client);
+                                    break 2;
+                                default:
+                                    $this->send($client, "SERVER ERROR unknown state");
+                            }
                         }
+                    } catch (\Exception $e) {
+                        $result = $e->getMessage();
+                        if (!$result) {
+                            $result = "ERROR";
+                        }
+                        $this->send($client, $result);
                     }
                 }
             }

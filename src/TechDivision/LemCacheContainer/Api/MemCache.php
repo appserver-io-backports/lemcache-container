@@ -52,235 +52,179 @@ class MemCache extends AbstractMemCache
     }
 
     /**
-     * central Method for pushing data into api-object
+     * Get da Request ValueObject and do something
      *
-     * @param string $request
+     * @param $vo
      * @return void
      */
-    public function push($request)
+    public function request($vo)
     {
-        // check if the intial connecten is already initiated and only data are expected
-        // else parse this request and select fitting action
-        if ($this->isAction()) {
-            $this->pushData($request);
-        } else {
-            if (($var = $this->parseRequest($request)) !== FALSE) {
-                switch ($var[0]) {
-                    case "set":
-                        $this->setAction($var);
-                        break;
-                    case "get":
-                        $this->GetAction($var);
-                        break;
-                    case "delete":
-                        $this->DeleteAction($var);
-                        break;
-                    case "quit":
-                        $this->QuitAction($var);
-                        break;
-                    default:
-                        $this->setState("reset");
-                        $this->setResponse("ERROR");
-                        break;
-                }
-                unset($var);
-            } else {
-                
-                $this->setState("reset");
-                $this->setResponse("ERROR");
-            }
-        }
-    }
-
-    /**
-     * Parse Request
-     *
-     * @param $request
-     * @return array|bool
-     */
-    protected function parseRequest($request)
-    {
-        // emtpy request or only a NewLine is not allowed
-        if (!$request OR $request == "\n" OR $request == "\r\n") {
-            return FALSE;
-        }
-
-        // strip header from request (in case of a set request e.g)
-        $header = strstr($request, $this->getNewLine(), TRUE);
-
-        $data = substr(strstr($request, $this->getNewLine()),strlen($this->getNewLine()));
-        // try to read action
-        $var = explode(" ", trim($header));
-        //append rest of this request in "data" key
-        $var['data'] = $data;
-
-        return $var;
-    }
-
-    /**
-     * Memcache "set" Action
-     *
-     * @param array $request
-     * @return void
-     */
-    protected function SetAction($request)
-    {
-        $this->setIsAction(TRUE);
-        try {
-                // set Action to "set"
-                $this->key = $request[1];
-
-                // validate Flag Value
-                if (is_numeric($request[2])) {
-                    $this->setFlags($request[2]);
-                } else {
-                    throw new \Exception("CLIENT_ERROR bad command line format");
-                }
-
-                // validate Expiretime value
-                if (is_numeric($request[3])) {
-                    $this->setExpTime($request[3]);
-                } else {
-                    throw new \Exception("CLIENT_ERROR bad data chunk");
-                }
-
-                // validate data-length in bytes
-                if (is_numeric($request[4])) {
-                    $this->setBytes($request[4]);
-                } else {
-                    throw new \Exception("CLIENT_ERROR bad data chunk");
-                }
-
-                $this->setState("resume");
-                $this->setResponse("");
-
-                if ($request['data']) {
-
-                    $this->pushData($request['data']);
-                }
-
-        } catch (\Exception $e) {
-            $this->setState("resume");
-            $this->setResponse($e->getMessage());
-        }
+        $this->vo = $vo;
+        //build Methodname from RequestAction und "Action"
+        $method = $vo->getRequestAction()."Action";
+        $this->$method();
     }
 
     /**
      * Memcache "get" Action
      *
-     * @param array $request
      * @return bool|void
      */
-    protected function GetAction($request)
+    protected function getAction()
     {
-        $key = $request[1];
         // read response from Store
-        $response = $this->StoreGet($key);
+        $response = $this->StoreGet($this->getVO()->getKey());
         // api object should deleted after sending response to client
-        $this->setState("reset");
         // set Response for client communication
         $this->setResponse($response);
     }
 
     /**
-     * MemCache "delete" Action
+     * Memcache "set" Action
      *
-     * @param array $request
      * @return void
      */
-    protected function DeleteAction($request)
+    protected function setAction()
     {
-        $key = $request[1];
+        $vo = $this->getVO();
+        $this->StoreSet($vo->getKey(), $vo->getFlags(), $vo->getExpTime(), $vo->getBytes(), $vo->getData());
+        $this->setResponse("STORED");
+    }
+
+    /**
+     * Memcache "add" Action
+     *
+     * @return void
+     */
+    protected function addAction()
+    {
+        $vo = $this->getVO();
+
+        if (!$this->StoreKeyExists($vo->getKey())) {
+            $this->StoreSet($vo->getKey(), $vo->getFlags(), $vo->getExpTime(), $vo->getBytes(), $vo->getData());
+            $this->setResponse("STORED");
+        } else {
+            $this->setResponse("NOT_STORED");
+        }
+    }
+
+    /**
+     * Memcache "replace" Action
+     *
+     * @return void
+     */
+    protected function replaceAction()
+    {
+        $vo = $this->getVO();
+
+        if ($this->StoreKeyExists($vo->getKey())) {
+            $this->StoreSet($vo->getKey(), $vo->getFlags(), $vo->getExpTime(), $vo->getBytes(), $vo->getData());
+            $this->setResponse("STORED");
+        } else {
+            $this->setResponse("NOT_STORED");
+        }
+    }
+
+    /**
+     * Memcache "append" Action
+     *
+     * @return void
+     */
+    protected function appendAction()
+    {
+        $vo = $this->getVO();
+
+        //check if Key exits
+        if ($this->StoreKeyExists($vo->getKey())) {
+            //read Entry in Raw (array) Format for faster processing
+            $ar = $this->StoreRawGet($vo->getKey());
+            //append new Data
+            $ar['data'] .= $vo->getData();
+            //save extends Entry to Store
+            $this->StoreRawSet($ar);
+
+            $this->setResponse("STORED");
+        } else {
+            $this->setResponse("NOT_STORED");
+        }
+    }
+
+    /**
+     * Memcache "prepend" Action
+     *
+     * @return void
+     */
+    protected function prependAction()
+    {
+        $vo = $this->getVO();
+
+        //check if Key exits
+        if ($this->StoreKeyExists($vo->getKey())) {
+            //read Entry in Raw (array) Format for faster processing
+            $ar = $this->StoreRawGet($vo->getKey());
+            //append new Data
+            $ar['data'] = $vo->getData().$ar['data'];
+            //save extends Entry to Store
+            $this->StoreRawSet($ar);
+
+            $this->setResponse("STORED");
+        } else {
+            $this->setResponse("NOT_STORED");
+        }
+    }
+
+    /**
+     * Memcache "touch" Action
+     *
+     * @return void
+     */
+    protected function touchAction()
+    {
+        $vo = $this->getVO();
+
+        //check if Key exits
+        if ($this->StoreKeyExists($vo->getKey())) {
+            //read Entry in Raw (array) Format for faster processing
+            $ar = $this->StoreGet($vo->getKey());
+            //append new Data
+            $ar['expTime'] = $vo->getExpTime();
+            //save extends Entry to Store
+            $this->StoreRawSet($ar);
+
+            $this->setResponse("TOUCHED");
+        } else {
+            $this->setResponse("NOT_FOUND");
+        }
+    }
+
+
+
+    /**
+     * MemCache "delete" Action
+     *
+     * @return void
+     */
+    protected function deleteAction()
+    {
         // read response from Store
-        $response = $this->StoreDelete($key);
+        $response = $this->StoreDelete($this->getVO()->getKey());
         // api object should deleted after sending response to client
         $this->setState("reset");
         // set Response for client communication
         $this->setResponse($response);
-    }
-
-    protected function AddAction($request)
-    {
-        $this->setIsAction(TRUE);
-        try {
-            // set Action to "set"
-            $this->key = $request[1];
-
-            // validate Flag Value
-            if (is_numeric($request[2])) {
-                $this->setFlags($request[2]);
-            } else {
-                throw new \Exception("CLIENT_ERROR bad command line format");
-            }
-
-            // validate Expiretime value
-            if (is_numeric($request[3])) {
-                $this->setExpTime($request[3]);
-            } else {
-                throw new \Exception("CLIENT_ERROR bad data chunk");
-            }
-
-            // validate data-length in bytes
-            if (is_numeric($request[4])) {
-                $this->setBytes($request[4]);
-            } else {
-                throw new \Exception("CLIENT_ERROR bad data chunk");
-            }
-
-            $this->setState("resume");
-            $this->setResponse("");
-
-            //if memcache client send "value" data within one request, our request parser will save it in "data"
-            if ($request['data']) {
-
-                $this->pushData($request['data']);
-            }
-
-        } catch (\Exception $e) {
-            $this->setState("resume");
-            $this->setResponse($e->getMessage());
-        }
     }
 
     /**
      * Memcache "quit" Action
      *
-     * @param array $request
      * @return void
      */
-    protected function QuitAction($request)
+    protected function quitAction()
     {
         // api object should deleted after sending response to client
         $this->setState("close");
 
         // set Response for client communication
         $this->setResponse("");
-    }
-
-    /**
-     * Method for validating "value" Data for "set" and "add" Action.
-     * Check if Bytes value is reached and set State/Response
-     *
-     * @param $data
-     * @return void
-     */
-    protected function pushData($data)
-    {
-        if ($data == $this->getNewline() && strlen($this->getData()) == $this->getBytes()) {
-            $this->StoreSet($this->getKey(), $this->getFlags(), $this->getExpTime(), $this->getBytes(), $this->getData());
-            $this->setState("reset");
-            $this->setResponse("STORED");
-        } else {
-            if ($data != $this->getNewLine()) {$data = rtrim($data);}
-            $this->setData($data);
-            if (strlen($this->getData()) == $this->getBytes()) {
-                $this->StoreSet($this->getKey(), $this->getFlags(), $this->getExpTime(), $this->getBytes(), $this->getData());
-                $this->setState("reset");
-                $this->setResponse("STORED");
-            } elseif (strlen($this->getData()) > $this->getBytes()) {
-                $this->setState("reset");
-                $this->setResponse("CLIENT_ERROR bad data chunk{$this->getNewLine()}ERROR");
-            }
-        }
     }
 }

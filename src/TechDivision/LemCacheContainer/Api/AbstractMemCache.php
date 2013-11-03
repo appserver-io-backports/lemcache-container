@@ -23,6 +23,14 @@ namespace TechDivision\LemCacheContainer\Api;
 
 class AbstractMemCache
 {
+
+    /**
+     * holds Request valueObject
+     *
+     * @var null
+     */
+    protected $vo = NULL;
+
     /**
      * keeps string representing a NEWLINE
      *
@@ -100,6 +108,21 @@ class AbstractMemCache
      * @var string
      */
     protected $key = "";
+
+    public function __construct()
+    {
+        $this->reset();
+    }
+
+    /**
+     * get ValueObject
+     *
+     * @return vo
+     */
+    protected function getVO()
+    {
+        return $this->vo;
+    }
 
     /**
      * Get $response
@@ -317,13 +340,14 @@ class AbstractMemCache
     {
         $this->newLine="\r\n";
         $this->response = "";
-        $this->state = "";
+        $this->state = "reset";
         $this->action = FALSE;
         $this->flags = 0;
         $this->expTime = 0;
         $this->bytes = 0;
         $this->data = "";
         $this->key = "";
+        $this->vo = NULL;
     }
 
     /**
@@ -350,6 +374,24 @@ class AbstractMemCache
     }
 
     /**
+     * checks if Key already exists in store
+     *
+     * @param $key
+     * @return bool
+     */
+    protected function StoreKeyExists($key)
+    {
+        \Mutex::lock($this->mutex);
+        $s = $this->store[$this->getStorePrefix().$key];
+        \Mutex::unlock($this->mutex);
+        if ($s) {
+            return TRUE;
+        } else {
+            return FALSE;
+        }
+    }
+
+    /**
      * Setting new values in $store
      *
      * @param $key
@@ -371,7 +413,7 @@ class AbstractMemCache
         \Mutex::lock($this->mutex);
         $this->store[$this->getStorePrefix().$key] = $ar;
         // add for every new entry a GarbageCollector Entry - another Thread will keep a eye on it
-        //@fixme: ugly code cause of Problems with Stackable array....
+        //@fixme: ugly code because of Problems with Stackable array....
         $invalidator = $this->store[$this->getGCPrefix()];
         $invalidator[$key] = $exptime;
         $this->store[$this->getGCPrefix()] = $invalidator;
@@ -396,5 +438,32 @@ class AbstractMemCache
         }
         \Mutex::unlock($this->mutex);
         return $result;
+    }
+
+    /**
+     * get entry from Store in raw (array) format
+     *
+     * @param $key
+     * @return array
+     */
+    protected function StoreRawGet($key)
+    {
+        \Mutex::lock($this->mutex);
+        $s = $this->store[$this->getStorePrefix().$key];
+        \Mutex::unlock($this->mutex);
+        return $s;
+    }
+
+    /**
+     * get entry from Store in raw (array) format
+     *
+     * @param $ar array
+     * @return void
+     */
+    protected function StoreRawSet($ar)
+    {
+        \Mutex::lock($this->mutex);
+        $this->store[$this->getStorePrefix().$ar['key']] = $ar;
+        \Mutex::unlock($this->mutex);
     }
 }

@@ -39,7 +39,7 @@ class MemCacheEntry extends AbstractMemCacheEntry
     {
         // check if the intial connecten is already initiated and only data are expected
         // else parse this request and select fitting action
-        if ($this->isAction()) {
+        if ($this->getRequestAction()) {
             $this->pushData($request);
         } else {
             if (($var = $this->parseRequest($request)) !== FALSE) {
@@ -57,12 +57,12 @@ class MemCacheEntry extends AbstractMemCacheEntry
                         $this->QuitAction($var);
                         break;
                     default:
-                        $this->setValidity(FALSE);
+                        throw new \Exception("");
                         break;
                 }
                 unset($var);
             } else {
-                $this->setValidity(FALSE);
+                throw new \Exception("");
             }
         }
     }
@@ -100,38 +100,32 @@ class MemCacheEntry extends AbstractMemCacheEntry
      */
     protected function SetAction($request)
     {
-        $this->setIsAction(TRUE);
-        try {
-                // set Action to "set"
-                $this->key = $request[1];
+        $this->SetRequestAction('set');
+        $this->setKey($request[1]);
 
-                // validate Flag Value
-                if (is_numeric($request[2])) {
-                    $this->setFlags($request[2]);
-                } else {
-                    throw new \Exception("CLIENT_ERROR bad command line format");
-                }
+        // validate Flag Value
+        if (is_numeric($request[2])) {
+        $this->setFlags($request[2]);
+        } else {
+        throw new \Exception("CLIENT_ERROR bad command line format");
+        }
 
-                // validate Expiretime value
-                if (is_numeric($request[3])) {
-                    $this->setExpTime($request[3]);
-                } else {
-                    throw new \Exception("CLIENT_ERROR bad data chunk");
-                }
+        // validate Expiretime value
+        if (is_numeric($request[3])) {
+        $this->setExpTime($request[3]);
+        } else {
+        throw new \Exception("CLIENT_ERROR bad data chunk");
+        }
 
-                // validate data-length in bytes
-                if (is_numeric($request[4])) {
-                    $this->setBytes($request[4]);
-                } else {
-                    throw new \Exception("CLIENT_ERROR bad data chunk");
-                }
+        // validate data-length in bytes
+        if (is_numeric($request[4])) {
+        $this->setBytes($request[4]);
+        } else {
+        throw new \Exception("CLIENT_ERROR bad data chunk");
+        }
 
-                if ($request['data']) {
-                    $this->pushData($request['data']);
-                }
-
-        } catch (\Exception $e) {
-            $this->setResponse($e->getMessage());
+        if ($request['data']) {
+        $this->pushData($request['data']);
         }
     }
 
@@ -163,44 +157,33 @@ class MemCacheEntry extends AbstractMemCacheEntry
 
     protected function AddAction($request)
     {
-        $this->setIsAction(TRUE);
-        try {
-            // set Action to "set"
-            $this->key = $request[1];
+        $this->SetRequestAction('add');
+        $this->setKey($request[1]);
 
-            // validate Flag Value
-            if (is_numeric($request[2])) {
-                $this->setFlags($request[2]);
-            } else {
-                throw new \Exception("CLIENT_ERROR bad command line format");
-            }
+        // validate Flag Value
+        if (is_numeric($request[2])) {
+            $this->setFlags($request[2]);
+        } else {
+            throw new \Exception("CLIENT_ERROR bad command line format");
+        }
 
-            // validate Expiretime value
-            if (is_numeric($request[3])) {
-                $this->setExpTime($request[3]);
-            } else {
-                throw new \Exception("CLIENT_ERROR bad data chunk");
-            }
+        // validate Expiretime value
+        if (is_numeric($request[3])) {
+            $this->setExpTime($request[3]);
+        } else {
+            throw new \Exception("CLIENT_ERROR bad data chunk");
+        }
 
-            // validate data-length in bytes
-            if (is_numeric($request[4])) {
-                $this->setBytes($request[4]);
-            } else {
-                throw new \Exception("CLIENT_ERROR bad data chunk");
-            }
+        // validate data-length in bytes
+        if (is_numeric($request[4])) {
+            $this->setBytes($request[4]);
+        } else {
+            throw new \Exception("CLIENT_ERROR bad data chunk");
+        }
 
-            $this->setState("resume");
-            $this->setResponse("");
-
-            //if memcache client send "value" data within one request, our request parser will save it in "data"
-            if ($request['data']) {
-
-                $this->pushData($request['data']);
-            }
-
-        } catch (\Exception $e) {
-            $this->setState("resume");
-            $this->setResponse($e->getMessage());
+        //if memcache client send "value" data within one request, our request parser will save it in "data"
+        if ($request['data']) {
+            $this->pushData($request['data']);
         }
     }
 
@@ -212,11 +195,8 @@ class MemCacheEntry extends AbstractMemCacheEntry
      */
     protected function QuitAction($request)
     {
-        // api object should deleted after sending response to client
-        $this->setState("close");
-
-        // set Response for client communication
-        $this->setResponse("");
+        $this->SetRequestAction('quit');
+        $this->setComplete(TRUE);
     }
 
     /**
@@ -224,24 +204,21 @@ class MemCacheEntry extends AbstractMemCacheEntry
      * Check if Bytes value is reached and set State/Response
      *
      * @param $data
-     * @return void
+     * @return mixed
      */
     protected function pushData($data)
     { 
         if ($data == $this->getNewline() && strlen($this->getData()) == $this->getBytes()) {
-            $this->StoreSet($this->getKey(), $this->getFlags(), $this->getExpTime(), $this->getBytes(), $this->getData());
-            $this->setState("reset");
-            $this->setResponse("STORED");
+            $this->setComplete(true);
+            return true;
         } else {
             if ($data != $this->getNewLine()) {$data = rtrim($data);}
             $this->setData($data);
             if (strlen($this->getData()) == $this->getBytes()) {
-                $this->StoreSet($this->getKey(), $this->getFlags(), $this->getExpTime(), $this->getBytes(), $this->getData());
-                $this->setState("reset");
-                $this->setResponse("STORED");
+                $this->setComplete(true);
+                return true;
             } elseif (strlen($this->getData()) > $this->getBytes()) {
-                $this->setState("reset");
-                $this->setResponse("CLIENT_ERROR bad data chunk{$this->getNewLine()}ERROR");
+                throw new \Exception("CLIENT_ERROR bad data chunk");
             }
         }
     }
