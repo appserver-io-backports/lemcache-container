@@ -106,7 +106,7 @@ class AbstractMemCacheEntry
      *
      * @return void
      */
-    protected function reset()
+    public function reset()
     {
         $this->response = "";
         $this->complete = FALSE;
@@ -135,7 +135,7 @@ class AbstractMemCacheEntry
      *
      * @return string
      */
-    protected function getData()
+    public function getData()
     {
         return $this->data;
     }
@@ -156,7 +156,7 @@ class AbstractMemCacheEntry
      *
      * @return int
      */
-    protected function getFlags()
+    public function getFlags()
     {
         return $this->flags;
     }
@@ -198,7 +198,7 @@ class AbstractMemCacheEntry
      *
      * @return int
      */
-    protected function getBytes()
+    public function getBytes()
     {
         return $this->bytes;
     }
@@ -219,7 +219,7 @@ class AbstractMemCacheEntry
      *
      * @return int
      */
-    protected function getKey()
+    public function getKey()
     {
         return $this->key;
     }
@@ -240,7 +240,7 @@ class AbstractMemCacheEntry
      *
      * @return int
      */
-    protected function getExpTime()
+    public function getExpTime()
     {
         return $this->expTime;
     }
@@ -274,5 +274,15 @@ class AbstractMemCacheEntry
     protected function getComplete()
     {
         return $this->complete;
+    }
+
+    /**
+     *
+     *
+     * @return mixed
+     */
+    public function isComplete()
+    {
+        return $this->getComplete();
     }
 }

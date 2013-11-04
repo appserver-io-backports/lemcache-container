@@ -103,7 +103,7 @@ class Worker extends AbstractContextThread
     {
         // create memcache api object
         $api = $this->newInstance('TechDivision\LemCacheContainer\Api\MemCache', array($this->store, $this->mutex));
-
+        var_dump($api->getState());
         // create MemCache ValueObject for request parsing
         $vo = $this->newInstance('TechDivision\LemCacheContainer\Api\MemCacheEntry');
 
@@ -139,12 +139,12 @@ class Worker extends AbstractContextThread
 
                             // select current state
                             switch ($api->getState()) {
-                                case "resume";
-                                    break;
                                 case "reset";
+                                    $vo->reset();
                                     $api->reset();
                                     break;
                                 case "close":
+                                    $vo->reset();
                                     $api->reset();
                                     try {
                                         $client->shutdown();
@@ -159,6 +159,8 @@ class Worker extends AbstractContextThread
                             }
                         }
                     } catch (\Exception $e) {
+                        $vo->reset();
+                        $api->reset();
                         $result = $e->getMessage();
                         if (!$result) {
                             $result = "ERROR";

@@ -109,11 +109,6 @@ class AbstractMemCache
      */
     protected $key = "";
 
-    public function __construct()
-    {
-        $this->reset();
-    }
-
     /**
      * get ValueObject
      *
