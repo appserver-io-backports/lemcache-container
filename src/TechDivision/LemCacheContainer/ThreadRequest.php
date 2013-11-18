@@ -102,6 +102,7 @@ class ThreadRequest extends AbstractContextThread {
                 case "resume";
                     break;
                 case "reset";
+
                     $api->reset();
                     break;
                 case "close":
