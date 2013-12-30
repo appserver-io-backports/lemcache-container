@@ -28,12 +28,16 @@ class Receiver extends AbstractReceiver
 {
 
     /**
-     * @var $store stackable object
+     * The store object from the initial context.
+     * 
+     * @var object
      */
     public $store;
 
     /**
-     * @var $mutex MUTEX
+     * The mutex instance to lock/unlock the store.
+     * 
+     * @var \Mutex
      */
     public $mutex;
 
@@ -57,11 +61,9 @@ class Receiver extends AbstractReceiver
 
         try {
 
-            // create new Store Object
-            $this->store = new Store;
-
-            $this->store['1'] = array();
-
+            // load the store object from the initial context
+            $this->store = $this->getInitialContext()->getStorage()->getStorage();
+            
             //create Mutex for KeyValueStore
             $this->mutex = \Mutex::create(false);
 
@@ -103,15 +105,23 @@ class Receiver extends AbstractReceiver
         }
 
         return false;
-
-
     }
 
+    /**
+     * Returns the store object from the initial context.
+     * 
+     * @return object $store The store object from the initial context
+     */
     protected function getStore()
     {
         return $this->store;
     }
 
+    /**
+     * Returns the mutex.
+     * 
+     * @return \Mutex The mutex instance
+     */
     protected function getMutex()
     {
         return $this->mutex;
