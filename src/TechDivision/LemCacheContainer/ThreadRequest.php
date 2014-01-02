@@ -95,8 +95,6 @@ class ThreadRequest extends AbstractContextThread {
             // send response to client (even if response is empty)
             $this->send($client, $api->getResponse());
 
-            //error_log($api->getState());
-
             // select current state
             switch ($api->getState()) {
                 case "resume";

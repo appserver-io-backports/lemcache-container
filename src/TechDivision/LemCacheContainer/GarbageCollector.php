@@ -92,14 +92,12 @@ class GarbageCollector extends \Thread {
             $this->store[$this->getGCPrefix()] = array();
             \Mutex::unlock($this->mutex);
 
-            #var_dump($this->invalidationArray);
             $asd = $this->invalidationArray[$curTime];
             if (is_array($asd)) {
                 foreach ($asd as $row){
                     \Mutex::lock($this->mutex);
                     unset($this->store[$this->getStorePrefix().$row]);
                     \Mutex::unlock($this->mutex);
-                    error_log("key ".$row." deleted...");
                 }
             }
 

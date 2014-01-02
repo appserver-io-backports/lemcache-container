@@ -103,7 +103,6 @@ class Worker extends AbstractContextThread
     {
         // create memcache api object
         $api = $this->newInstance('TechDivision\LemCacheContainer\Api\MemCache', array($this->store, $this->mutex));
-        var_dump($api->getState());
         // create MemCache ValueObject for request parsing
         $vo = $this->newInstance('TechDivision\LemCacheContainer\Api\MemCacheEntry');
 
