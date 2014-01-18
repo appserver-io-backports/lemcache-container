@@ -107,6 +107,13 @@ class Receiver extends AbstractReceiver
                     $this->mutex
                 ));
                 $gc->start();
+
+                // log a message that the container has been started successfully
+                $this->getInitialContext()->getSystemLogger()->info(
+                    sprintf('Successfully started receiver for container %s, listening on IP: %s Port: %s Number of workers started: %s, Workertype: %s',
+                    $this->getContainer()->getContainerNode()->getName(), $this->getAddress(), $this->getPort(),
+                    $this->getWorkerNumber(), $this->getWorkerType()));
+                
                 return true;
             }
             
