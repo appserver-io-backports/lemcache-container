@@ -16,10 +16,11 @@ use TechDivision\ApplicationServer\AbstractContextThread;
 use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
 use TechDivision\Socket\Client;
 use TechDivision\SplClassLoader;
+use TechDivision\MessageQueueClient\Queue;
 
 /**
  * The thread implementation that handles the request.
- * 
+ *
  * @package     TechDivision\MessageQueue
  * @copyright  	Copyright (c) 2013 <info@techdivision.com> - TechDivision GmbH
  * @license    	http://opensource.org/licenses/osl-3.0.php
@@ -152,7 +153,8 @@ class ThreadRequest extends AbstractContextThread {
     /**
      * Tries to find and return the application for the passed class name.
      *
-     * @param string $className The name of the class to find and return the application instance
+     * @param \TechDivision\MessageQueueClient\Queue $queue
+     *            The queue to find and return the application instance
      * @return \TechDivision\PersistenceContainer\Application The application instance
      * @throws \Exception Is thrown if no application can be found for the passed class name
      */

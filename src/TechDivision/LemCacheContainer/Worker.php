@@ -66,15 +66,15 @@ class Worker extends AbstractContextThread
      * Init acceptor with container and acceptable socket resource
      * and thread type class.
      *
-     * @param ContainerInterface $container
+     * @param \TechDivision\ApplicationServer\Interfaces\ContainerInterface $container
      *            A container implementation
      * @param resource $resource
      *            The client socket instance
      * @param string $threadType
      *            The thread type class to instantiate
-     * @param Store $store
+     * @param \TechDivision\ApplicationServer\GenericStackable $store
      *            StackableArray
-     * @param Mutex $mutex
+     * @param \Mutex|int $mutex
      *            Mutex for Stackable $store
      * @return void
      */

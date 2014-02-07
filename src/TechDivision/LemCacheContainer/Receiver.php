@@ -58,34 +58,34 @@ class Receiver extends AbstractReceiver
     public function start()
     {
         try {
-            
+
             // load the store object from the initial context
             $this->store = $this->getInitialContext()
                 ->getStorage()
                 ->getStorage();
-            
+
             // create Mutex for KeyValueStore
             $this->mutex = \Mutex::create(false);
-            
+
             /**
              *
              * @var \TechDivision\Socket\Client $socket
              */
             $socket = $this->newInstance($this->getResourceClass());
-            
+
             // prepare the main socket and listen
             $socket->setAddress($this->getAddress())
                 ->setPort($this->getPort())
                 ->start();
-            
+
             // check if resource been initiated
             if ($resource = $socket->getResource()) {
-                
+
                 // init worker number
                 $worker = 0;
                 // init workers array holder
                 $workers = array();
-                
+
                 // open threads where accept connections
                 while ($worker ++ < $this->getWorkerNumber()) {
                     $params = array(
@@ -96,11 +96,11 @@ class Receiver extends AbstractReceiver
                         $this->getStore(),
                         $this->getMutex()
                     );
-                    
+
                     $workers[$worker] = $this->newInstance($this->getWorkerType(), $params);
                     $workers[$worker]->start();
                 }
-                
+
                 // start garbageCollctor Thread
                 $gc = $this->newInstance("TechDivision\LemCacheContainer\GarbageCollector", array(
                     $this->store,
@@ -113,20 +113,20 @@ class Receiver extends AbstractReceiver
                     sprintf('Successfully started receiver for container %s, listening on IP: %s Port: %s Number of workers started: %s, Workertype: %s',
                     $this->getContainer()->getContainerNode()->getName(), $this->getAddress(), $this->getPort(),
                     $this->getWorkerNumber(), $this->getWorkerType()));
-                
+
                 return true;
             }
-            
+
         } catch (\Exception $e) {
             $this->getInitialContext()
                 ->getSystemLogger()
                 ->error($e->__toString());
         }
-        
+
         if (is_resource($resource)) {
             $socket->close();
         }
-        
+
         return false;
     }
 
@@ -143,7 +143,7 @@ class Receiver extends AbstractReceiver
     /**
      * Returns the mutex.
      *
-     * @return \Mutex The mutex instance
+     * @return \Mutex|int The mutex instance
      */
     protected function getMutex()
     {
