@@ -8,42 +8,65 @@
  * This source file is subject to the Open Software License (OSL 3.0)
  * that is available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
+ *
+ * PHP version 5
+ *
+ * @category  Appserver
+ * @package   TechDivision_LemCacheContainer
+ * @author    Philipp Dittert <pd@techdivision.com>
+ * @copyright 2014 TechDivision GmbH <info@techdivision.com>
+ * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link      http://www.appserver.io
  */
-
 
 namespace TechDivision\LemCacheContainer\Api;
 
 use TechDivision\Socket\Client;
 use TechDivision\LemCacheContainer\Api\AbstractMemCache;
 
-
 /**
- * The http client implementation that handles the request like a webserver
- *
- * @package     TechDivision\LemCacheContainer
- * @copyright  	Copyright (c) 2013 <info@techdivision.com> - TechDivision GmbH
- * @license    	http://opensource.org/licenses/osl-3.0.php
- *              Open Software License (OSL 3.0)
- * @author      Philipp Dittert <p.dittert@techdivision.com>
+ * Memcache compatible cache implementation.
+ * 
+ * @category   Appserver
+ * @package    TechDivision_WebSocketContainer
+ * @subpackage Api
+ * @author     Philipp Dittert <pd@techdivision.com>
+ * @copyright  2014 TechDivision GmbH <info@techdivision.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link       http://www.appserver.io
  */
-
-
 class MemCache extends AbstractMemCache
 {
+    
     /**
-     * StackableArray for sharing data between threads
+     * Stackable array for sharing data between threads.
      *
-     * @var array
+     * @var \TechDivision\LemCacheContainer\Store
      */
     public $store;
 
     /**
-     * Mutex for keeping Data inside $store valid
+     * Mutex for keeping Data inside store valid.
      *
-     * @var int
+     * @var integer
      */
     public $mutex;
+    
+    /**
+     * The value object storing the incoming data to be cached.
+     * 
+     * @var \TechDivision\LemCacheContainer\Api\MemCacheEntry
+     */
+    public $vo;
 
+    /**
+     * Initializes the instance with the store and the mutex value.
+     * 
+     * @param \TechDivision\LemCacheContainer\Store $store The store instance
+     * @param integer                               $mutex The mutex value
+     * 
+     * @return void
+     */
     public function __construct($store, $mutex)
     {
         $this->reset();
@@ -53,29 +76,33 @@ class MemCache extends AbstractMemCache
     }
 
     /**
-     * Get da Request ValueObject and do something
+     * Handle the the passed request VO.
      *
-     * @param $vo
+     * @param \TechDivision\LemCacheContaine\Api\MemcacheEntry $vo The VO with the data to handle
+     * 
      * @return void
      */
     public function request($vo)
     {
+        
+        // initialize the VO
         $this->vo = $vo;
+        
         //build Methodname from RequestAction und "Action"
-        $method = $vo->getRequestAction()."Action";
+        $method = $vo->getRequestAction() . "Action";
         $this->$method();
     }
 
     /**
-     * Memcache "get" Action
+     * Memcache "get" action implementation.
      *
-     * @return bool|void
+     * @return void
+     * @todo API object should deleted after sending response to client
      */
     protected function getAction()
     {
         // read response from Store
-        $response = $this->StoreGet($this->getVO()->getKey());
-        // api object should deleted after sending response to client
+        $response = $this->storeGet($this->getVO()->getKey());
         // set Response for client communication
         $this->setResponse($response);
     }
@@ -88,7 +115,7 @@ class MemCache extends AbstractMemCache
     protected function setAction()
     {
         $vo = $this->getVO();
-        $this->StoreSet($vo->getKey(), $vo->getFlags(), $vo->getExpTime(), $vo->getBytes(), $vo->getData());
+        $this->storeSet($vo->getKey(), $vo->getFlags(), $vo->getExpTime(), $vo->getBytes(), $vo->getData());
         $this->setResponse("STORED");
     }
 
@@ -101,8 +128,8 @@ class MemCache extends AbstractMemCache
     {
         $vo = $this->getVO();
 
-        if (!$this->StoreKeyExists($vo->getKey())) {
-            $this->StoreSet($vo->getKey(), $vo->getFlags(), $vo->getExpTime(), $vo->getBytes(), $vo->getData());
+        if (!$this->storeKeyExists($vo->getKey())) {
+            $this->storeSet($vo->getKey(), $vo->getFlags(), $vo->getExpTime(), $vo->getBytes(), $vo->getData());
             $this->setResponse("STORED");
         } else {
             $this->setResponse("NOT_STORED");
@@ -118,8 +145,8 @@ class MemCache extends AbstractMemCache
     {
         $vo = $this->getVO();
 
-        if ($this->StoreKeyExists($vo->getKey())) {
-            $this->StoreSet($vo->getKey(), $vo->getFlags(), $vo->getExpTime(), $vo->getBytes(), $vo->getData());
+        if ($this->storeKeyExists($vo->getKey())) {
+            $this->storeSet($vo->getKey(), $vo->getFlags(), $vo->getExpTime(), $vo->getBytes(), $vo->getData());
             $this->setResponse("STORED");
         } else {
             $this->setResponse("NOT_STORED");
@@ -136,13 +163,13 @@ class MemCache extends AbstractMemCache
         $vo = $this->getVO();
 
         //check if Key exits
-        if ($this->StoreKeyExists($vo->getKey())) {
+        if ($this->storeKeyExists($vo->getKey())) {
             //read Entry in Raw (array) Format for faster processing
-            $ar = $this->StoreRawGet($vo->getKey());
+            $ar = $this->storeRawGet($vo->getKey());
             //append new Data
             $ar['data'] .= $vo->getData();
             //save extends Entry to Store
-            $this->StoreRawSet($ar);
+            $this->storeRawSet($ar);
 
             $this->setResponse("STORED");
         } else {
@@ -160,13 +187,13 @@ class MemCache extends AbstractMemCache
         $vo = $this->getVO();
 
         //check if Key exits
-        if ($this->StoreKeyExists($vo->getKey())) {
+        if ($this->storeKeyExists($vo->getKey())) {
             //read Entry in Raw (array) Format for faster processing
-            $ar = $this->StoreRawGet($vo->getKey());
+            $ar = $this->storeRawGet($vo->getKey());
             //append new Data
             $ar['data'] = $vo->getData().$ar['data'];
             //save extends Entry to Store
-            $this->StoreRawSet($ar);
+            $this->storeRawSet($ar);
 
             $this->setResponse("STORED");
         } else {
@@ -184,13 +211,13 @@ class MemCache extends AbstractMemCache
         $vo = $this->getVO();
 
         //check if Key exits
-        if ($this->StoreKeyExists($vo->getKey())) {
+        if ($this->storeKeyExists($vo->getKey())) {
             //read Entry in Raw (array) Format for faster processing
-            $ar = $this->StoreGet($vo->getKey());
+            $ar = $this->storeGet($vo->getKey());
             //append new Data
             $ar['expTime'] = $vo->getExpTime();
             //save extends Entry to Store
-            $this->StoreRawSet($ar);
+            $this->storeRawSet($ar);
 
             $this->setResponse("TOUCHED");
         } else {
@@ -208,7 +235,7 @@ class MemCache extends AbstractMemCache
     protected function deleteAction()
     {
         // read response from Store
-        $response = $this->StoreDelete($this->getVO()->getKey());
+        $response = $this->storeDelete($this->getVO()->getKey());
         // api object should deleted after sending response to client
         $this->setState("reset");
         // set Response for client communication

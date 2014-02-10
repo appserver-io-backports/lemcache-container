@@ -1,4 +1,5 @@
 <?php
+
 /**
  * TechDivision\LemCacheContainer\Api\MemCache
  *
@@ -7,112 +8,121 @@
  * This source file is subject to the Open Software License (OSL 3.0)
  * that is available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
+ *
+ * PHP version 5
+ *
+ * @category  Appserver
+ * @package   TechDivision_LemCacheContainer
+ * @author    Philipp Dittert <pd@techdivision.com>
+ * @copyright 2014 TechDivision GmbH <info@techdivision.com>
+ * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link      http://www.appserver.io
  */
 
 namespace TechDivision\LemCacheContainer\Api;
 
 /**
- * The http client implementation that handles the request like a webserver
- *
- * @package     TechDivision\LemCacheContainer
- * @copyright  	Copyright (c) 2013 <info@techdivision.com> - TechDivision GmbH
- * @license    	http://opensource.org/licenses/osl-3.0.php
- *              Open Software License (OSL 3.0)
- * @author      Philipp Dittert <p.dittert@techdivision.com>
+ * Abstract implementation to handle memcache functionality.
+ * 
+ * @category   Appserver
+ * @package    TechDivision_WebSocketContainer
+ * @subpackage Api
+ * @author     Philipp Dittert <pd@techdivision.com>
+ * @copyright  2014 TechDivision GmbH <info@techdivision.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link       http://www.appserver.io
  */
-
 class AbstractMemCache
 {
 
     /**
-     * holds Request valueObject
+     * Holds the request value object instance.
      *
-     * @var null
+     * @var \TechDivision\LemCacheContainer\Api\MemCacheEntry
      */
-    protected $vo = NULL;
+    protected $vo = null;
 
     /**
-     * keeps string representing a NEWLINE
+     * The string representing a the new line char.
      *
      * @var string
      */
-    protected $newLine="\r\n";
-
+    protected $newLine = "\r\n";
 
     /**
-     * Prefix for saving multiple keys inside one Stackable
-     *@var string
+     * Prefix for saving multiple keys inside one Stackable.
+     * 
+     * @var string
      */
     protected $storePrefix = "0-";
 
     /**
-     * keeps the GarbageCollector Prefix Value
+     * Keeps the garbage collector prefix value.
      *
      * @var string
      */
     protected $gcPrefix = "1";
 
     /**
-     * keeps response text that will sent to client after finish processing request
+     * Keeps response text that will sent to client after finish processing request.
      *
      * @var string
      */
     protected $response = "";
 
     /**
-     * keeps the following state of the connection
-     * values are: resume, reset, close
+     * Keeps the following state of the connection values are: resume, reset, close.
      *
      * @var string
      */
     protected $state = "close";
 
     /**
-     * flag is action is already and only Data are expected
+     * Flag is action is already and only data are expected.
      *
-     * @var bool
+     * @var boolean
      */
-    protected $action = FALSE;
+    protected $action = false;
 
     /**
-     * MemCache Flag Value (enable/disable compression)
+     * Memcache flag value to enable/disable compression.
      *
-     * @var int
+     * @var integer
      */
     protected $flags = 0;
 
     /**
-     * Seconds after a Enty is InValid
+     * Seconds after a entry is invalid.
      *
-     * @var int
+     * @var integer
      */
     protected $expTime = 0;
 
     /**
-     * Value length in bytes
+     * Value length in bytes.
      *
-     * @var int
+     * @var integer
      */
     protected $bytes = 0;
 
     /**
-     * holds "value"
+     * holds the value to be stored.
      *
      * @var string
      */
     protected $data = "";
 
     /**
-     * holds "key"
+     * Holds the key of the value to be stored.
      *
      * @var string
      */
     protected $key = "";
 
     /**
-     * get ValueObject
+     * Returns the value object instance.
      *
-     * @return vo
+     * @return \TechDivision\LemCacheContainer\Api\MemCacheEntry
      */
     protected function getVO()
     {
@@ -120,9 +130,9 @@ class AbstractMemCache
     }
 
     /**
-     * Get $response
+     * Returns the response that will be sent back to the client.
      *
-     * @return string
+     * @return string The response that will be sent back
      */
     public function getResponse()
     {
@@ -130,9 +140,10 @@ class AbstractMemCache
     }
 
     /**
-     * Set $response
+     * Set response that will be sent back to the client.
      *
-     * @param $response
+     * @param string $response The response to sent back
+     * 
      * @return void
      */
     protected function setResponse($response)
@@ -141,9 +152,10 @@ class AbstractMemCache
     }
 
     /**
-     * set $state
+     * Return's following state of the connection, one of resume, 
+     * reset or close.
      *
-     * @return string
+     * @return string The state itself
      */
     public function getState()
     {
@@ -151,9 +163,10 @@ class AbstractMemCache
     }
 
     /**
-     * set $state
+     * Set's following state of the connection, one of resume, reset or close.
      *
-     * @param $var
+     * @param string $var The cache state
+     * 
      * @return void
      */
     protected function setState($var)
@@ -162,9 +175,10 @@ class AbstractMemCache
     }
 
     /**
-     * set $flags
+     * Set's the cache flags.
      *
-     * @param $flags
+     * @param integer $flags The cache flag to be set
+     * 
      * @return void
      */
     protected function setFlags($flags)
@@ -173,9 +187,9 @@ class AbstractMemCache
     }
 
     /**
-     * get $flags
+     * Return's the cache flags.
      *
-     * @return int
+     * @return integer The cache flags
      */
     protected function getFlags()
     {
@@ -183,9 +197,10 @@ class AbstractMemCache
     }
 
     /**
-     * set $bytes
+     * Set's the number of the bytes of the data.
      *
-     * @param $bytes
+     * @param integer $bytes The number of bytes
+     * 
      * @return void
      */
     protected function setBytes($bytes)
@@ -194,9 +209,9 @@ class AbstractMemCache
     }
 
     /**
-     * get $bytes
+     * Return's the number of bytes of the data.
      *
-     * @return int
+     * @return integer The nubmer of bytes
      */
     protected function getBytes()
     {
@@ -204,20 +219,21 @@ class AbstractMemCache
     }
 
     /**
-     * set $expTime
+     * Set's the expriation time for the data in seconds.
      *
-     * @param $ExpTime
+     * @param integer $expTime The data's expiration time in seconds
+     * 
      * @return void
      */
-    protected function setExpTime($ExpTime)
+    protected function setExpTime($expTime)
     {
-        $this->expTime = $ExpTime;
+        $this->expTime = $expTime;
     }
 
     /**
-     * get $expTime
+     * Return's the expiration time for the data in seconds.
      *
-     * @return int
+     * @return integer The data's expiration time in seconds
      */
     protected function getExpTime()
     {
@@ -225,9 +241,9 @@ class AbstractMemCache
     }
 
     /**
-     * get $newLine
+     * The new line value used.
      *
-     * @return string
+     * @return string The new line value
      */
     protected function getNewLine()
     {
@@ -235,9 +251,10 @@ class AbstractMemCache
     }
 
     /**
-     * set $data ("value")
+     * Appends the data to this instance.
      *
-     * @param $data
+     * @param string $data The data to append
+     *  
      * @return void
      */
     protected function setData($data)
@@ -246,9 +263,9 @@ class AbstractMemCache
     }
 
     /**
-     * get $data
+     * Returns the data of this instance.
      *
-     * @return string
+     * @return string The instance data
      */
     protected function getData()
     {
@@ -256,9 +273,10 @@ class AbstractMemCache
     }
 
     /**
-     * set $key
+     * Set's the key of the value to be stored.
      *
-     * @param $key
+     * @param string $key The key of the value to be stored
+     * 
      * @return void
      */
     protected function setKey($key)
@@ -267,9 +285,9 @@ class AbstractMemCache
     }
 
     /**
-     * get $key
+     * Return's the key of the value to be stored.
      *
-     * @return string
+     * @return string The key of the value to be stored
      */
     protected function getKey()
     {
@@ -277,9 +295,9 @@ class AbstractMemCache
     }
 
     /**
-     * get $store
+     * Return's the store instance.
      *
-     * @return StackableArray
+     * @return \Stackable The store instance itself
      */
     protected function getStore()
     {
@@ -287,9 +305,9 @@ class AbstractMemCache
     }
 
     /**
-     * Check if action value is set
+     * Check if action value is set.
      *
-     * @return bool
+     * @return boolean TRUE if the action has been set, else FALSE
      */
     protected function isAction()
     {
@@ -297,19 +315,19 @@ class AbstractMemCache
     }
 
     /**
-     * Set $action attribute to TRUE (disabling is not important)
+     * Set action attribute to TRUE (disabling is not important).
      *
      * @return void
      */
-    protected function SetIsAction()
+    protected function setIsAction()
     {
         $this->action = true;
     }
 
     /**
-     * get string $storePrefix
+     * Return's the store prefix.
      *
-     * @return string
+     * @return string The store prefix
      */
     protected function getStorePrefix()
     {
@@ -317,9 +335,9 @@ class AbstractMemCache
     }
 
     /**
-     * returns GarbageCollector Prefix
+     * Return's the garbage collector prefix.
      *
-     * @return string
+     * @return string The garbage collector prefix
      */
     protected function getGCPrefix()
     {
@@ -327,106 +345,114 @@ class AbstractMemCache
     }
 
     /**
-     * reset all attributes for reusing object
+     * Reset all attributes for reusing the object.
      *
      * @return void
      */
     public function reset()
     {
-        $this->newLine="\r\n";
+        $this->newLine = "\r\n";
         $this->response = "";
         $this->state = "reset";
-        $this->action = FALSE;
+        $this->action = false;
         $this->flags = 0;
         $this->expTime = 0;
         $this->bytes = 0;
         $this->data = "";
         $this->key = "";
-        $this->vo = NULL;
+        $this->vo = null;
     }
 
     /**
-     * getting Values from $store
+     * Returns the value with the passed key from the store.
      *
-     * @param string $key
-     * @return string
+     * @param string $key The key to return the value for
+     * 
+     * @return string The value for the passed key
      */
-    protected function StoreGet($key)
+    protected function storeGet($key)
     {
         $result = "";
         \Mutex::lock($this->mutex);
-        $s = $this->store[$this->getStorePrefix().$key];
+        $s = $this->store[$this->getStorePrefix() . $key];
         \Mutex::unlock($this->mutex);
         if ($s) {
-            $result = "VALUE ".$s['key']." ";
-            $result .= $s['flags']." ";
-            $result .= $s['bytes'].$this->getNewLine();
-            $result .= $s['value'].$this->getNewLine();
+            $result = "VALUE " . $s['key'] . " ";
+            $result .= $s['flags'] . " ";
+            $result .= $s['bytes'] . $this->getNewLine();
+            $result .= $s['value'] . $this->getNewLine();
         }
         $result .= "END";
-
         return $result;
     }
 
     /**
-     * checks if Key already exists in store
+     * Checks if the passed key already exists in store.
      *
-     * @param $key
-     * @return bool
+     * @param string $key The key to check for
+     * 
+     * @return boolean TRUE if the value has already been stored, else FALSE
      */
-    protected function StoreKeyExists($key)
+    protected function storeKeyExists($key)
     {
         \Mutex::lock($this->mutex);
-        $s = $this->store[$this->getStorePrefix().$key];
+        $s = $this->store[$this->getStorePrefix() . $key];
         \Mutex::unlock($this->mutex);
         if ($s) {
-            return TRUE;
+            return true;
         } else {
-            return FALSE;
+            return false;
         }
     }
 
     /**
-     * Setting new values in $store
+     * Store a new value build from the passed data in store.
      *
-     * @param $key
-     * @param $flags
-     * @param $exptime
-     * @param $bytes
-     * @param $value
-     * @return bool
+     * @param string  $key     The key to store the value with 
+     * @param integer $flags   Flags to compress/uncompress the value
+     * @param integer $expTime The expiration time in seconds
+     * @param integer $bytes   The bytes of the value
+     * @param string  $value   The value itself
+     * 
+     * @return boolean TRUE if the value has been added, else FALSE
+     * @todo Refacotr invalidator code because of problems with stackable array (line 429+)
      */
-    protected function StoreSet($key, $flags, $exptime, $bytes, $value)
+    protected function storeSet($key, $flags, $expTime, $bytes, $value)
     {
+        
+        // initialize the array with the data
         $ar = array();
         $ar['key'] = $key;
         $ar['flags'] = $flags;
-        $ar['exptime'] = $exptime;
+        $ar['exptime'] = $expTime;
         $ar['bytes'] = $bytes;
         $ar['value'] = $value;
 
+        // lock the container and try to store the data
         \Mutex::lock($this->mutex);
-        $this->store[$this->getStorePrefix().$key] = $ar;
-        // add for every new entry a GarbageCollector Entry - another Thread will keep a eye on it
-        //@fixme: ugly code because of Problems with Stackable array....
+        $this->store[$this->getStorePrefix() . $key] = $ar;
+        // add for every new entry a garbage collector Entry - another thread will keep a eye on it
         $invalidator = $this->store[$this->getGCPrefix()];
-        $invalidator[$key] = $exptime;
+        $invalidator[$key] = $expTime;
         $this->store[$this->getGCPrefix()] = $invalidator;
         \Mutex::unlock($this->mutex);
-        return TRUE;
+        
+        // return TRUE if the data has been stored successfully
+        return true;
     }
 
     /**
-     * Deleting values from $store
+     * Delete's the value with the passed key from the store.
      *
-     * @param $key
-     * @return string
+     * @param string $key The key of the value to delete
+     * 
+     * @return string The result as string
      */
-    protected function StoreDelete($key)
+    protected function storeDelete($key)
     {
         \Mutex::lock($this->mutex);
-        if ($this->store[$this->getStorePrefix().$key]) {
-            unset($this->store[$this->getStorePrefix().$key]);
+        if ($this->store[$this->getStorePrefix() . $key]) {
+            unset($this->store[$this->getStorePrefix() . $key]);
             $result = "DELETED";
         } else {
             $result = "NOT_FOUND";
@@ -436,29 +462,31 @@ class AbstractMemCache
     }
 
     /**
-     * get entry from Store in raw (array) format
+     * Return's entry from store in raw (array) format.
      *
-     * @param $key
-     * @return array
+     * @param string $key The key to return the entry for
+     * 
+     * @return array The entry itself
      */
-    protected function StoreRawGet($key)
+    protected function storeRawGet($key)
     {
         \Mutex::lock($this->mutex);
-        $s = $this->store[$this->getStorePrefix().$key];
+        $s = $this->store[$this->getStorePrefix() . $key];
         \Mutex::unlock($this->mutex);
         return $s;
     }
 
     /**
-     * get entry from Store in raw (array) format
+     * Set's entry from store in raw (array) format.
      *
-     * @param $ar array
+     * @param array $ar The array with the key to return the value for
+     *  
      * @return void
      */
-    protected function StoreRawSet($ar)
+    protected function storeRawSet($ar)
     {
         \Mutex::lock($this->mutex);
-        $this->store[$this->getStorePrefix().$ar['key']] = $ar;
+        $this->store[$this->getStorePrefix() . $ar['key']] = $ar;
         \Mutex::unlock($this->mutex);
     }
 }
