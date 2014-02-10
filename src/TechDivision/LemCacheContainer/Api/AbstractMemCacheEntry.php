@@ -7,122 +7,137 @@
  * This source file is subject to the Open Software License (OSL 3.0)
  * that is available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
+ *
+ * PHP version 5
+ *
+ * @category  Appserver
+ * @package   TechDivision_LemCacheContainer
+ * @author    Philipp Dittert <pd@techdivision.com>
+ * @copyright 2014 TechDivision GmbH <info@techdivision.com>
+ * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link      http://www.appserver.io
  */
 
 namespace TechDivision\LemCacheContainer\Api;
 
 /**
- *
- * @package     TechDivision\LemCacheContainer
- * @copyright  	Copyright (c) 2013 <info@techdivision.com> - TechDivision GmbH
- * @license    	http://opensource.org/licenses/osl-3.0.php
- *              Open Software License (OSL 3.0)
- * @author      Philipp Dittert <p.dittert@techdivision.com>
+ * The abstract base class for a cache entry implementation, e. g. memcache.
+ * 
+ * @category   Appserver
+ * @package    TechDivision_WebSocketContainer
+ * @subpackage Api
+ * @author     Philipp Dittert <pd@techdivision.com>
+ * @copyright  2014 TechDivision GmbH <info@techdivision.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link       http://www.appserver.io
  */
-
 class AbstractMemCacheEntry
 {
+    
     /**
-     * keeps response text that will sent to client after finish processing request
+     * Keeps response text that will sent to client after finish processing request.
      *
      * @var string
      */
-    protected $response = "";
+    protected $response = '';
 
     /**
-     * flag is action is already and only Data are expected
+     * Flag is action is already and only Data are expected.
      *
-     * @var bool
+     * @var boolean
      */
     protected $action;
 
     /**
-     * Holds completion state of the Request
-     *
+     * Holds completion state of the Request.
+     * 
+     * @var boolean
      */
     protected $complete;
 
     /**
-     * MemCache Flag Value (enable/disable compression)
+     * The memcache flag value to enable/disable compression.
      *
-     * @var int
+     * @var integer
      */
     protected $flags;
 
     /**
-     * Seconds after a Enty is InValid
+     * Expiration date in seconds after a entty is invalid.
      *
-     * @var int
+     * @var integer
      */
     protected $expTime;
 
     /**
-     * Value length in bytes
+     * Value length in bytes.
      *
-     * @var int
+     * @var integer
      */
     protected $bytes;
 
     /**
-     * Holds MemCache CommandAction for this Request (e.g. "set")
+     * Holds memcache command action for this request (e. g. 'set').
      *
      * @var string
      */
     protected $requestAction;
 
     /**
-     * holds "value"
+     * The data to be stored.
      *
      * @var string
      */
     protected $data;
 
     /**
-     * holds "key"
+     * The key to store the data with.
      *
      * @var string
      */
     protected $key;
 
     /**
-     * keeps string representing a NEWLINE
+     * The newline char to use.
      *
      * @var string
      */
     protected $newLine;
 
     /**
-     * Constructor
+     * Constructor that reset's all attributes to 
+     * default values.
      *
+     * @return void
      */
     public function __construct()
     {
-        //resets all attributes to default values
         $this->reset();
     }
 
     /**
-     * resets all Attributes to default
+     * Resets all attributes to the default values.
      *
      * @return void
      */
     public function reset()
     {
         $this->response = "";
-        $this->complete = FALSE;
+        $this->complete = false;
         $this->flags = 0;
         $this->expTime = 0;
         $this->bytes = 0;
         $this->requestAction = "";
         $this->data = "";
         $this->key = "";
-        $this->newLine="\r\n";
+        $this->newLine = "\r\n";
     }
 
     /**
-     * set $data ("value")
+     * Appends the data to this instance.
      *
-     * @param $data
+     * @param string $data The data to append
+     *  
      * @return void
      */
     protected function setData($data)
@@ -131,9 +146,9 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * get $data
+     * Returns the data of this instance.
      *
-     * @return string
+     * @return string The instance data
      */
     public function getData()
     {
@@ -141,9 +156,10 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * set $flags
+     * Set's the instance flags.
      *
-     * @param $flags
+     * @param integer $flags The instance flags
+     * 
      * @return void
      */
     protected function setFlags($flags)
@@ -152,9 +168,9 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * get $flags
+     * Return's the instance flags.
      *
-     * @return int
+     * @return integer The instance flags
      */
     public function getFlags()
     {
@@ -162,9 +178,10 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * set RequestAction
+     * Set's the request action passed as parameter.
      *
-     * @param $value
+     * @param string $value The request action for this instance
+     * 
      * @return void
      */
     protected function setRequestAction($value)
@@ -173,9 +190,9 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * get RequestAction
+     * Returns the request action of this instance.
      *
-     * @return string
+     * @return string The request instance
      */
     public function getRequestAction()
     {
@@ -183,9 +200,10 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * set $bytes
+     * Set's the number of the bytes of the data.
      *
-     * @param $bytes
+     * @param integer $bytes The number of bytes
+     * 
      * @return void
      */
     protected function setBytes($bytes)
@@ -194,9 +212,9 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * get $bytes
+     * Return's the number of bytes of the data.
      *
-     * @return int
+     * @return integer The nubmer of bytes
      */
     public function getBytes()
     {
@@ -204,9 +222,10 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * set $bytes
+     * Set's the key to store the data with
      *
-     * @param $key
+     * @param string $key The key to store the data with
+     * 
      * @return void
      */
     protected function setKey($key)
@@ -215,9 +234,9 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * get $bytes
+     * Return's the key to store the data with.
      *
-     * @return int
+     * @return string The key to store the data with
      */
     public function getKey()
     {
@@ -225,20 +244,21 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * set $expTime
+     * Set's the expriation time for the data in seconds.
      *
-     * @param $ExpTime
+     * @param integer $expTime The data's expiration time in seconds
+     * 
      * @return void
      */
-    protected function setExpTime($ExpTime)
+    protected function setExpTime($expTime)
     {
-        $this->expTime = $ExpTime;
+        $this->expTime = $expTime;
     }
 
     /**
-     * get $expTime
+     * Return's the expiration time for the data in seconds.
      *
-     * @return int
+     * @return integer The data's expiration time in seconds
      */
     public function getExpTime()
     {
@@ -246,9 +266,9 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * NewLine Value
+     * The new line value used.
      *
-     * @return string
+     * @return string The new line value
      */
     protected function getNewLine()
     {
@@ -256,9 +276,10 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * Set Request state (TRUE|FALSE)
+     * Set's current request state, TRUE for completed, else FALSE.
      *
-     * @param $value bool
+     * @param boolean $value The request state
+     * 
      * @return void
      */
     protected function setComplete($value)
@@ -267,9 +288,9 @@ class AbstractMemCacheEntry
     }
 
     /**
-     * get current request state
+     * Return's the current request state, TRUE for completed, else FALSE.
      *
-     * @return mixed
+     * @return boolean The current request state
      */
     protected function getComplete()
     {
@@ -277,9 +298,10 @@ class AbstractMemCacheEntry
     }
 
     /**
-     *
-     *
-     * @return mixed
+     * Return's TRUE if the request is complete, ELSE false
+     * 
+     * @return boolean TRUE if the request is complete, ELSE false
+     * @see \TechDivision\LemCacheContainer\Api\AbstractMemCacheEntry::getComplete()
      */
     public function isComplete()
     {
