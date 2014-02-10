@@ -56,8 +56,6 @@ class MemCacheEntry extends AbstractMemCacheEntry
             // parse the request data
             $var = $this->parseRequest($request);
             
-            error_log(var_export($var, true));
-            
             // if the request is NOT empty
             if (empty($var)) {
                 throw new \Exception('Empty request data found');
@@ -101,8 +99,6 @@ class MemCacheEntry extends AbstractMemCacheEntry
      */
     protected function parseRequest($request)
     {
-        
-        error_log(var_export($request, true));
         
         // emtpy request or only a new line is not allowed
         if ($request == false || $request == "\n" || $request == "\r\n") {

@@ -36,7 +36,7 @@ class AbstractMemCache
 {
 
     /**
-     * Holds the request value object instande.
+     * Holds the request value object instance.
      *
      * @var \TechDivision\LemCacheContainer\Api\MemCacheEntry
      */
