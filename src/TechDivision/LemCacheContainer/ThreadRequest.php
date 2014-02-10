@@ -23,9 +23,6 @@
 namespace TechDivision\LemCacheContainer;
 
 use TechDivision\ApplicationServer\AbstractContextThread;
-use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
-use TechDivision\Socket\Client;
-use TechDivision\SplClassLoader;
 
 /**
  * Dummy implementation.

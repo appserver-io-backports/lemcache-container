@@ -72,33 +72,33 @@ class Receiver extends AbstractReceiver
     public function start()
     {
         try {
-            
+
             // load the store object from the initial context
             $this->store = $this->getInitialContext()
                 ->getStorage()
                 ->getStorage();
-            
+
             // create Mutex for KeyValueStore
             $this->mutex = \Mutex::create(false);
-            
+
             /**
              * @var \TechDivision\Socket\Client $socket
              */
             $socket = $this->newInstance($this->getResourceClass());
-            
+
             // prepare the main socket and listen
             $socket->setAddress($this->getAddress())
                 ->setPort($this->getPort())
                 ->start();
-            
+
             // check if resource been initiated
             if ($resource = $socket->getResource()) {
-                
+
                 // init worker number
                 $worker = 0;
                 // init workers array holder
                 $workers = array();
-                
+
                 // open threads where accept connections
                 while ($worker ++ < $this->getWorkerNumber()) {
                     
@@ -116,7 +116,7 @@ class Receiver extends AbstractReceiver
                     $workers[$worker] = $this->newInstance($this->getWorkerType(), $params);
                     $workers[$worker]->start();
                 }
-                
+
                 // start garbageCollctor Thread
                 $gc = $this->newInstance("TechDivision\LemCacheContainer\GarbageCollector", array(
                     $this->store,
@@ -152,7 +152,7 @@ class Receiver extends AbstractReceiver
                 // kill the garbage collector
                 $gc->kill();
             }
-            
+
         } catch (\Exception $e) {
             $this->getInitialContext()
                 ->getSystemLogger()
@@ -163,13 +163,12 @@ class Receiver extends AbstractReceiver
         if (is_resource($resource)) {
             $socket->close();
         }
-
+        
         // log that the receiver has successfully been shutdown
         $this->getInitialContext()->getSystemLogger()->info(
             "Successfully stopped receiver " . $this->getContainer()->getContainerNode()->getName()
         );
-
-        // return FALSE
+        
         return false;
     }
 
@@ -186,7 +185,7 @@ class Receiver extends AbstractReceiver
     /**
      * Returns the mutex.
      *
-     * @return \Mutex The mutex instance
+     * @return \Mutex|int The mutex instance
      */
     protected function getMutex()
     {
