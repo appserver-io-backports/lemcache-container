@@ -17,8 +17,8 @@
 namespace TechDivision\LemCacheContainer\Api;
 
 /**
- *
- * <REPLACE WITH CLASS DESCRIPTION>
+ * This testcase represents the requirements for the memcached actions that are realized in the
+ * lemcachecontainer memcache implementation.
  *
  * @category   AppServer
  * @package    TechDivision\LemCacheContainer
@@ -46,11 +46,16 @@ class MemCacheTest extends \PHPUnit_Framework_TestCase
     public $expectedData;
     public $expectedExpireTime;
 
+    /**
+     * Setting up the testenvironment
+     *
+     * @return void
+     */
     public function setUp()
     {
         // Init a client for testing the lemcache implementation
         $this->memcached = new \Memcached();
-        $this->memcached->addServer(self::LOCALHOST, self::MEMCACHE_PORT);
+        $this->memcached->addServer(self::LOCALHOST, self::LEMCACHE_PORT);
 
         // Default setting: compression enabled
         $this->memcached->setOption(\Memcached::OPT_COMPRESSION, false);
@@ -66,6 +71,8 @@ class MemCacheTest extends \PHPUnit_Framework_TestCase
 
     /**
      * MemCache "set" Action Test
+     *
+     * @return void
      */
     public function testSetAndGetAction()
     {
@@ -80,6 +87,8 @@ class MemCacheTest extends \PHPUnit_Framework_TestCase
 
     /**
      * MemCache "add" Action Test
+     *
+     * @return void
      */
     public function testAddAction()
     {
@@ -101,6 +110,8 @@ class MemCacheTest extends \PHPUnit_Framework_TestCase
 
     /**
      * MemCache "replace" Action Test
+     *
+     * @return void
      */
     public function testReplaceAction()
     {
@@ -121,6 +132,8 @@ class MemCacheTest extends \PHPUnit_Framework_TestCase
 
     /**
      * MemCache "append" Action Test
+     *
+     * @return void
      *
      * (requires string data and deaktivated compression)
      */
@@ -144,6 +157,8 @@ class MemCacheTest extends \PHPUnit_Framework_TestCase
     /**
      * MemCache "prepend" Action Test
      *
+     * @return void
+     *
      * (requires string data and deaktivated compression)
      */
     public function testPrependAction()
@@ -165,6 +180,8 @@ class MemCacheTest extends \PHPUnit_Framework_TestCase
 
     /**
      * MemCache "touch" Action Test
+     *
+     * @return void
      */
     public function testTouchAction()
     {
@@ -188,6 +205,8 @@ class MemCacheTest extends \PHPUnit_Framework_TestCase
 
     /**
      * MemCache "delete" Action Test
+     *
+     * @return void
      */
     public function testDeleteAction()
     {
@@ -201,17 +220,18 @@ class MemCacheTest extends \PHPUnit_Framework_TestCase
 
     /**
      * MemCache "quit" Action Test
+     *
+     * @return void
      */
     public function testQuitAction()
     {
         // Store data in the memcache instance to check if session was killed correct
-        $this->memcached->set($this->key,$this->expectedData);
+        $this->memcached->set($this->key, $this->expectedData);
 
         // Close all connections to the instance and kills session
         $this->assertTrue($this->memcached->quit());
 
         // Memcache should rebuild a connection automatically
-        $this->assertEquals($this->expectedData,$this->memcached->get($this->key));
+        $this->assertEquals($this->expectedData, $this->memcached->get($this->key));
     }
 }
-
