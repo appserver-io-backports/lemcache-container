@@ -41,7 +41,7 @@ class MemCache extends AbstractMemCache
     /**
      * Stackable array for sharing data between threads.
      *
-     * @var \TechDivision\LemCacheContainer\Store
+     * @var \Stackable
      */
     public $store;
 
@@ -62,8 +62,8 @@ class MemCache extends AbstractMemCache
     /**
      * Initializes the instance with the store and the mutex value.
      * 
-     * @param \TechDivision\LemCacheContainer\Store $store The store instance
-     * @param integer                               $mutex The mutex value
+     * @param \Stackable $store The store instance
+     * @param integer    $mutex The mutex value
      * 
      * @return void
      */
