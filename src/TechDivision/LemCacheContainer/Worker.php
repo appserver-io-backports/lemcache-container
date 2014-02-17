@@ -41,28 +41,28 @@ class Worker extends AbstractContextThread
     /**
      * StackableArray so share all Data between threads
      *
-     * @var Stackable $store
+     * @var \Stackable $store
      */
     public $store;
 
     /**
      * Mutex for locking access to $store for Data consistency
      *
-     * @var Mutex
+     * @var integer
      */
     public $mutex;
 
     /**
      * Holds the container implementation
      *
-     * @var ContainerInterface
+     * @var \TechDivision\ApplicationServer\Interfaces\ContainerInterface
      */
     public $container;
 
     /**
      * Holds the main socket resource
      *
-     * @var resource
+     * @var mixed
      */
     public $resource;
 
@@ -77,12 +77,12 @@ class Worker extends AbstractContextThread
      * Init acceptor with container and acceptable socket resource
      * and thread type class.
      *
-     * @param ContainerInterface $container  A container implementation
-     * @param resource           $resource   The client socket instance
-     * @param string             $threadType The thread type class to instantiate
-     * @param Store              $store      Stackable array
-     * @param Mutex              $mutex      Mutex for the stackable
-     *            
+     * @param \TechDivision\ApplicationServer\Interfaces\ContainerInterface $container  A container implementation
+     * @param mixed                                                         $resource   The client socket instance
+     * @param string                                                        $threadType The thread type class to instantiate
+     * @param \Stackable                                                    $store      Stackable array
+     * @param integer                                                       $mutex      Mutex for the stackable
+     *
      * @return void
      */
     public function init(ContainerInterface $container, $resource, $threadType, $store, $mutex)
@@ -96,7 +96,7 @@ class Worker extends AbstractContextThread
 
     /**
      * Returns the resource socket class name.
-     * 
+     *
      * @return string The resource socket class name
      * @see \TechDivision\ApplicationServer\AbstractWorker::getResourceClass()
      */
@@ -104,10 +104,10 @@ class Worker extends AbstractContextThread
     {
         return 'TechDivision\Socket';
     }
-    
+
     /**
      * The main method to start the thread.
-     * 
+     *
      * @return void
      * @see \Thread:run()
      */
@@ -115,7 +115,7 @@ class Worker extends AbstractContextThread
     {
         // create memcache api object
         $api = $this->newInstance('TechDivision\LemCacheContainer\Api\MemCache', array($this->store, $this->mutex));
-        
+
         // create MemCache ValueObject for request parsing
         $vo = $this->newInstance('TechDivision\LemCacheContainer\Api\MemCacheEntry');
 
@@ -123,8 +123,8 @@ class Worker extends AbstractContextThread
 
             // reinitialize the server socket
             $serverSocket = $this->initialContext->newInstance($this->getResourceClass(), array(
-                $this->resource
-            ));
+                    $this->resource
+                ));
 
             // accept client connection and process the request
             if ($clientSocket = $serverSocket->accept()) {
@@ -136,9 +136,9 @@ class Worker extends AbstractContextThread
                 $client->setResource($clientSocket->getResource());
 
                 while (true) {
-                    
+
                     try {
-                        
+
                         // read client message
                         $message = $client->receive();
 
@@ -146,7 +146,7 @@ class Worker extends AbstractContextThread
                         $vo->push($message);
 
                         if ($vo->isComplete()) {
-                            
+
                             $api->request($vo);
 
                             // send response to client (even if response is empty)
@@ -154,44 +154,44 @@ class Worker extends AbstractContextThread
 
                             // select current state
                             switch ($api->getState()) {
-                            
+
                                 case "reset":
                                     $vo->reset();
                                     $api->reset();
                                     break;
-                                    
+
                                 case "close":
                                     $vo->reset();
                                     $api->reset();
-                                    
+
                                     try {
                                         $client->shutdown();
                                         $client->close();
                                     } catch (\Exception $e) {
                                         $client->close();
                                     }
-                                    
+
                                     unset($client);
                                     break 2;
-                                    
+
                                 default:
                                     $this->send($client, "SERVER ERROR unknown state");
-                                    
+
                             }
                         }
-                        
+
                     } catch (\Exception $e) {
-                        
+
                         $vo->reset();
                         $api->reset();
                         $result = $e->getMessage();
-                        
+
                         $this->getInitialContext()->getSystemLogger()->critical($e->__toString());
-                        
+
                         if (!$result) {
                             $result = "ERROR";
                         }
-                        
+
                         $this->send($client, $result);
                     }
                 }
@@ -200,12 +200,12 @@ class Worker extends AbstractContextThread
     }
 
     /**
-     * Helper Method for sending data to client. Add new line on every 
+     * Helper Method for sending data to client. Add new line on every
      * response.
      *
-     * @param resource $socket   The socket instance
-     * @param string   $response The string to send back to client extended with the new line char
-     * 
+     * @param mixed  $socket   The socket instance
+     * @param string $response The string to send back to client extended with the new line char
+     *
      * @return void
      */
     public function send($socket, $response)
