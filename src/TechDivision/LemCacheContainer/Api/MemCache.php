@@ -26,7 +26,7 @@ use TechDivision\LemCacheContainer\Api\AbstractMemCache;
 
 /**
  * Memcache compatible cache implementation.
- * 
+ *
  * @category   Appserver
  * @package    TechDivision_WebSocketContainer
  * @subpackage Api
@@ -37,7 +37,7 @@ use TechDivision\LemCacheContainer\Api\AbstractMemCache;
  */
 class MemCache extends AbstractMemCache
 {
-    
+
     /**
      * Stackable array for sharing data between threads.
      *
@@ -51,20 +51,20 @@ class MemCache extends AbstractMemCache
      * @var integer
      */
     public $mutex;
-    
+
     /**
      * The value object storing the incoming data to be cached.
-     * 
+     *
      * @var \TechDivision\LemCacheContainer\Api\MemCacheEntry
      */
     public $vo;
 
     /**
      * Initializes the instance with the store and the mutex value.
-     * 
+     *
      * @param \Stackable $store The store instance
      * @param integer    $mutex The mutex value
-     * 
+     *
      * @return void
      */
     public function __construct($store, $mutex)
@@ -79,15 +79,15 @@ class MemCache extends AbstractMemCache
      * Handle the the passed request VO.
      *
      * @param \TechDivision\LemCacheContaine\Api\MemcacheEntry $vo The VO with the data to handle
-     * 
+     *
      * @return void
      */
     public function request($vo)
     {
-        
+
         // initialize the VO
         $this->vo = $vo;
-        
+
         //build Methodname from RequestAction und "Action"
         $method = $vo->getRequestAction() . "Action";
         $this->$method();
