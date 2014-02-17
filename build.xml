@@ -1,9 +1,6 @@
 <?xml version="1.0"?>
 <project name="TechDivision_LemCacheContainer" default="deploy" basedir=".">
-	<property file="${basedir}/build.properties"/>
-	<property file="${basedir}/build.default.properties"/>
-    <property file="${basedir}/build.${os.family}.properties"/>
-	<property environment="env" />
+
 	<property name="namespace" value="techdivision" />
 	<property name="module" value="lemcachecontainer"/>
 	<property name="codepool" value="vendor"/>
@@ -11,6 +8,12 @@
 	<property name="php-src.dir" value="${basedir}/src" />
 	<property name="php-test.dir" value="${basedir}/tests" />
 	<property name="php-target.dir" value="${basedir}/target"/>
+
+	<property environment="env" />
+
+	<property file="${basedir}/build.properties"/>
+	<property file="${basedir}/build.default.properties"/>
+    <property file="${basedir}/build.${os.family}.properties"/>
 
 	<!-- ==================================================================== -->
 	<!-- Cleans the directories with the generated source files				  -->
@@ -56,8 +59,8 @@
     <!-- Generates the API documentation                                      -->
     <!-- ==================================================================== -->
     <target name="apidoc" description="Generates the API documentation.">
-         <exec executable="${pear.bin.dir}/phpdoc">
-            <arg line="-ct type -ue on -s on -t ${php-target.dir}/docs -o HTML:frames:earthli -d ${php-src.dir}"/>
+         <exec executable="phpdoc">
+            <arg line="-t ${php-target.dir}/docs -d ${php-src.dir}"/>
          </exec>
     </target>
 
@@ -108,17 +111,10 @@
     </target>
 
     <!-- ==================================================================== -->
-    <!-- Runs the PHPUnit tests and generates a report						  -->
-    <!-- ==================================================================== -->
-    <target name="build" description="Runs the PHPUnit tests and generates a report.">
-        <antcall target="phpmd"/>
-    </target>
-
-    <!-- ==================================================================== -->
     <!-- Copies the test sources to the target directory					  -->
     <!-- ==================================================================== -->
     <target name="copy-tests" depends="copy" description="Copies the test sources to the target directory.">
-        <!-- copy the test classes to the target directory -->
+    	<!-- copy the test classes to the target directory -->
         <copy todir="${php-target.dir}/${unique.name}/src">
             <fileset dir="${php-test.dir}">
                 <include name="**/*" />
@@ -127,12 +123,11 @@
                 <expandproperties/>
             </filterchain>
         </copy>
-        <!-- copy the composer configuration file to the target directory -->
-        <copy file="${basedir}/composer.json" todir="${php-target.dir}" />
+    	<!-- copy the composer configuration file to the target directory -->
+    	<copy file="${basedir}/composer.json" todir="${php-target.dir}" />
         <!-- install composer packages -->
-        <exec dir="${php-target.dir}" executable="composer">
-            <env key="PATH"
-                 value="${instance.base.dir}/bin:${env.PATH}"/>
+        <exec dir="${php-target.dir}" executable="composer" searchpath="true">
+            <env key="PATH" value="${instance.base.dir}/bin:${env.PATH}"/>
             <arg line="update"/>
         </exec>
     </target>
@@ -140,11 +135,33 @@
     <!-- ==================================================================== -->
     <!-- Runs the PHPUnit tests on Travis-CI and generates a report           -->
     <!-- ==================================================================== -->
-    <target name="lemcache-run-tests" depends="copy-tests" description="Runs the PHPUnit tests on Travis-CI and generates a report.">
-        <exec executable="phpunit"
-              dir="${php-target.dir}/${unique.name}/src"
-              failonerror="true">
-            <arg line="--configuration phpunit.xml.dist" />
+    <target name="run-tests" depends="copy-tests" description="Runs the PHPUnit tests on Travis-CI and generates a report.">
+        <exec executable="phpunit" dir="${php-target.dir}/${unique.name}/src">
+        	<arg line="--configuration phpunit.xml.dist" />
         </exec>
+    </target>
+
+    <!-- ==================================================================== -->
+    <!-- Runs the PHPUnit tests and generates a report                        -->
+    <!-- ==================================================================== -->
+    <target name="run-tests-in-runtime" depends="copy-tests" description="Runs the PHPUnit tests and generates a report.">
+        <exec executable="${instance.base.dir}/bin/php" dir="${php-target.dir}/${unique.name}/src" failonerror="true">
+            <arg line="-d zend_extension=xdebug.so ${instance.base.dir}/app/code/vendor/bin/phpunit --configuration phpunit.xml.dist" />
+        </exec>
+    </target>
+
+    <!-- ==================================================================== -->
+    <!-- Runs the PHPUnit tests and generates the code metrics				  -->
+    <!-- ==================================================================== -->
+    <target name="build" description="Runs the PHPUnit tests and generates the code metrics.">
+        <antcall target="phpcs"/>
+        <antcall target="run-tests"/>
+        <!--
+    	<antcall target="apidoc"/>
+    	<antcall target="phpcpd"/>
+    	<antcall target="phploc"/>
+    	<antcall target="pdepend"/>
+    	<antcall target="phpmd"/>
+    	-->
     </target>
 </project>
