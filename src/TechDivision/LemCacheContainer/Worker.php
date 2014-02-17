@@ -41,28 +41,28 @@ class Worker extends AbstractContextThread
     /**
      * StackableArray so share all Data between threads
      *
-     * @var Stackable $store
+     * @var \Stackable $store
      */
     public $store;
 
     /**
      * Mutex for locking access to $store for Data consistency
      *
-     * @var Mutex
+     * @var integer
      */
     public $mutex;
 
     /**
      * Holds the container implementation
      *
-     * @var ContainerInterface
+     * @var \TechDivision\ApplicationServer\Interfaces\ContainerInterface
      */
     public $container;
 
     /**
      * Holds the main socket resource
      *
-     * @var resource
+     * @var mixed
      */
     public $resource;
 
@@ -77,11 +77,11 @@ class Worker extends AbstractContextThread
      * Init acceptor with container and acceptable socket resource
      * and thread type class.
      *
-     * @param ContainerInterface $container  A container implementation
-     * @param resource           $resource   The client socket instance
-     * @param string             $threadType The thread type class to instantiate
-     * @param Store              $store      Stackable array
-     * @param Mutex              $mutex      Mutex for the stackable
+     * @param \TechDivision\ApplicationServer\Interfaces\ContainerInterface $container  A container implementation
+     * @param mixed                                                         $resource   The client socket instance
+     * @param string                                                        $threadType The thread type class to instantiate
+     * @param \Stackable                                                    $store      Stackable array
+     * @param integer                                                       $mutex      Mutex for the stackable
      *            
      * @return void
      */
@@ -203,8 +203,8 @@ class Worker extends AbstractContextThread
      * Helper Method for sending data to client. Add new line on every 
      * response.
      *
-     * @param resource $socket   The socket instance
-     * @param string   $response The string to send back to client extended with the new line char
+     * @param mixed  $socket   The socket instance
+     * @param string $response The string to send back to client extended with the new line char
      * 
      * @return void
      */
