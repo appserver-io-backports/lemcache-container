@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision\LemCacheContainer\Api\MemCache
+ * TechDivision\LemCacheContainer\Protocol\AbstractMemcache
  *
  * NOTICE OF LICENSE
  *
@@ -11,28 +11,29 @@
  *
  * PHP version 5
  *
- * @category  Appserver
- * @package   TechDivision_LemCacheContainer
- * @author    Philipp Dittert <pd@techdivision.com>
- * @copyright 2014 TechDivision GmbH <info@techdivision.com>
- * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
- * @link      http://www.appserver.io
+ * @category   Appserver
+ * @package    TechDivision_LemCacheContainer
+ * @subpackage Protocol
+ * @author     Philipp Dittert <pd@techdivision.com>
+ * @copyright  2014 TechDivision GmbH <info@techdivision.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link       http://www.appserver.io
  */
 
-namespace TechDivision\LemCacheContainer\Api;
+namespace TechDivision\LemCacheContainer\Protocol;
 
 /**
  * Abstract implementation to handle memcache functionality.
  * 
  * @category   Appserver
  * @package    TechDivision_WebSocketContainer
- * @subpackage Api
+ * @subpackage Protocol
  * @author     Philipp Dittert <pd@techdivision.com>
  * @copyright  2014 TechDivision GmbH <info@techdivision.com>
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  * @link       http://www.appserver.io
  */
-class AbstractMemCache
+class AbstractMemcache
 {
 
     /**
@@ -373,9 +374,9 @@ class AbstractMemCache
     protected function storeGet($key)
     {
         $result = "";
-        \Mutex::lock($this->mutex);
+        $this->store->lock();
         $s = $this->store[$this->getStorePrefix() . $key];
-        \Mutex::unlock($this->mutex);
+        $this->store->unlock();
         if ($s) {
             $result = "VALUE " . $s['key'] . " ";
             $result .= $s['flags'] . " ";
@@ -395,9 +396,9 @@ class AbstractMemCache
      */
     protected function storeKeyExists($key)
     {
-        \Mutex::lock($this->mutex);
+        $this->store->lock();
         $s = $this->store[$this->getStorePrefix() . $key];
-        \Mutex::unlock($this->mutex);
+        $this->store->unlock();
         if ($s) {
             return true;
         } else {
@@ -453,13 +454,13 @@ class AbstractMemCache
         $ar['value'] = $value;
 
         // lock the container and try to store the data
-        \Mutex::lock($this->mutex);
+        $this->store->lock();
         $this->store[$this->getStorePrefix() . $key] = $ar;
         // add for every new entry a garbage collector Entry - another thread will keep a eye on it
         $invalidator = $this->store[$this->getGCPrefix()];
         $invalidator[$key] = $expTime;
         $this->store[$this->getGCPrefix()] = $invalidator;
-        \Mutex::unlock($this->mutex);
+        $this->store->unlock();
         
         // return TRUE if the data has been stored successfully
         return true;
@@ -474,14 +475,14 @@ class AbstractMemCache
      */
     protected function storeDelete($key)
     {
-        \Mutex::lock($this->mutex);
+        $this->store->lock();
         if ($this->store[$this->getStorePrefix() . $key]) {
             unset($this->store[$this->getStorePrefix() . $key]);
             $result = "DELETED";
         } else {
             $result = "NOT_FOUND";
         }
-        \Mutex::unlock($this->mutex);
+        $this->store->unlock();
         return $result;
     }
 
@@ -494,9 +495,9 @@ class AbstractMemCache
      */
     protected function storeRawGet($key)
     {
-        \Mutex::lock($this->mutex);
+        $this->store->lock();
         $s = $this->store[$this->getStorePrefix() . $key];
-        \Mutex::unlock($this->mutex);
+        $this->store->unlock();
         return $s;
     }
 
@@ -509,9 +510,9 @@ class AbstractMemCache
      */
     protected function storeRawSet($ar)
     {
-        \Mutex::lock($this->mutex);
+        $this->store->lock();
         $this->store[$this->getStorePrefix() . $ar['key']] = $ar;
-        \Mutex::unlock($this->mutex);
+        $this->store->unlock();
     }
     
     /**
@@ -526,7 +527,7 @@ class AbstractMemCache
     protected function storeIncrement($key, $newValue = null)
     {
         
-        \Mutex::lock($this->mutex);
+        $this->store->lock();
         
         if ($this->store[$this->getStorePrefix() . $key]) {
             
@@ -544,7 +545,7 @@ class AbstractMemCache
             $result = "NOT_FOUND";
         }
         
-        \Mutex::unlock($this->mutex);
+        $this->store->unlock();
         
         return $result;
     }
@@ -560,8 +561,8 @@ class AbstractMemCache
      */
     protected function storeDecrement($key, $newValue = null)
     {
-        
-        \Mutex::lock($this->mutex);
+
+        $this->store->lock();
         
         if ($this->store[$this->getStorePrefix() . $key]) {
             
@@ -578,8 +579,8 @@ class AbstractMemCache
         } else {
             $result = "NOT_FOUND";
         }
-        
-        \Mutex::unlock($this->mutex);
+
+        $this->store->unlock();
         
         return $result;
     }

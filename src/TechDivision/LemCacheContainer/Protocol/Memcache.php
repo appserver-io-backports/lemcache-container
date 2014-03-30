@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision\LemCacheContainer\Api\MemCache
+ * TechDivision\LemCacheContainer\Protocol\Memcache
  *
  * NOTICE OF LICENSE
  *
@@ -11,31 +11,31 @@
  *
  * PHP version 5
  *
- * @category  Appserver
- * @package   TechDivision_LemCacheContainer
- * @author    Philipp Dittert <pd@techdivision.com>
- * @copyright 2014 TechDivision GmbH <info@techdivision.com>
- * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
- * @link      http://www.appserver.io
+ * @category   Appserver
+ * @package    TechDivision_LemCacheContainer
+ * @subpackage Protocol
+ * @author     Philipp Dittert <pd@techdivision.com>
+ * @copyright  2014 TechDivision GmbH <info@techdivision.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link       http://www.appserver.io
  */
 
-namespace TechDivision\LemCacheContainer\Api;
+namespace TechDivision\LemCacheContainer\Protocol;
 
 use TechDivision\Socket\Client;
-use TechDivision\LemCacheContainer\Api\AbstractMemCache;
 
 /**
  * Memcache compatible cache implementation.
  * 
  * @category   Appserver
  * @package    TechDivision_WebSocketContainer
- * @subpackage Api
+ * @subpackage Protocol
  * @author     Philipp Dittert <pd@techdivision.com>
  * @copyright  2014 TechDivision GmbH <info@techdivision.com>
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  * @link       http://www.appserver.io
  */
-class MemCache extends AbstractMemCache
+class Memcache extends AbstractMemcache
 {
     
     /**
@@ -44,18 +44,11 @@ class MemCache extends AbstractMemCache
      * @var \Stackable
      */
     public $store;
-
-    /**
-     * Mutex for keeping Data inside store valid.
-     *
-     * @var integer
-     */
-    public $mutex;
     
     /**
      * The value object storing the incoming data to be cached.
      * 
-     * @var \TechDivision\LemCacheContainer\Api\MemCacheEntry
+     * @var \TechDivision\LemCacheContainer\Protocol\MemcacheEntry
      */
     public $vo;
 
@@ -63,22 +56,20 @@ class MemCache extends AbstractMemCache
      * Initializes the instance with the store and the mutex value.
      * 
      * @param \Stackable $store The store instance
-     * @param integer    $mutex The mutex value
      * 
      * @return void
      */
-    public function __construct($store, $mutex)
+    public function __construct($store)
     {
         $this->reset();
         $this->store = $store;
         $this->store[0] = array();
-        $this->mutex = $mutex;
     }
 
     /**
      * Handle the the passed request VO.
      *
-     * @param \TechDivision\LemCacheContaine\Api\MemcacheEntry $vo The VO with the data to handle
+     * @param \TechDivision\LemCacheContaine\Protocol\MemcacheEntry $vo The VO with the data to handle
      * 
      * @return void
      */

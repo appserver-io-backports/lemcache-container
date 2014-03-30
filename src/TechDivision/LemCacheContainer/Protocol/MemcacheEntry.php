@@ -1,7 +1,7 @@
 <?php
 
 /**
- * TechDivision\LemCacheContainer\Api\MemCacheEntry
+ * TechDivision\LemCacheContainer\Protocol\MemcacheEntry
  *
  * NOTICE OF LICENSE
  *
@@ -11,17 +11,18 @@
  *
  * PHP version 5
  *
- * @category  Appserver
- * @package   TechDivision_LemCacheContainer
- * @author    Philipp Dittert <pd@techdivision.com>
- * @copyright 2014 TechDivision GmbH <info@techdivision.com>
- * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
- * @link      http://www.appserver.io
+ * @category   Appserver
+ * @package    TechDivision_LemCacheContainer
+ * @subpackage Protocol
+ * @author     Philipp Dittert <pd@techdivision.com>
+ * @copyright  2014 TechDivision GmbH <info@techdivision.com>
+ * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link       http://www.appserver.io
  */
 
-namespace TechDivision\LemCacheContainer\Api;
+namespace TechDivision\LemCacheContainer\Protocol;
 
-use TechDivision\LemCacheContainer\Api\AbstractMemCacheEntry;
+use TechDivision\LemCacheContainer\Protocol\AbstractMemcacheEntry;
 
 /**
  * This is the default implementation for a memcache/memcached compatible
@@ -29,13 +30,13 @@ use TechDivision\LemCacheContainer\Api\AbstractMemCacheEntry;
  * 
  * @category   Appserver
  * @package    TechDivision_WebSocketContainer
- * @subpackage Api
+ * @subpackage Protocol
  * @author     Philipp Dittert <pd@techdivision.com>
  * @copyright  2014 TechDivision GmbH <info@techdivision.com>
  * @license    http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
  * @link       http://www.appserver.io
  */
-class MemCacheEntry extends AbstractMemCacheEntry
+class MemcacheEntry extends AbstractMemcacheEntry
 {
 
     /**

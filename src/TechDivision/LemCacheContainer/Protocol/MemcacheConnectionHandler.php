@@ -70,6 +70,13 @@ class MemcacheConnectionHandler implements ConnectionHandlerInterface
      * @var array
      */
     protected $modules;
+    
+    /**
+     * The stackable storage.
+     * 
+     * @var \Stackable
+     */
+    protected $store;
 
     /**
      * Inits the connection handler by given context and params
@@ -83,6 +90,7 @@ class MemcacheConnectionHandler implements ConnectionHandlerInterface
     {
         // set server context
         $this->serverContext = $serverContext;
+        $this->store = $this->serverContext->getContainer()->getInitialContext()->getStorage()->getStorage();
 
         // register shutdown handler
         register_shutdown_function(array(&$this, "shutdown"));
@@ -108,6 +116,16 @@ class MemcacheConnectionHandler implements ConnectionHandlerInterface
     public function getModules()
     {
         return $this->modules;
+    }
+
+    /**
+     * Return's the stackable storage instance.
+     *
+     * @return \Stackable The stackable storage
+     */
+    public function getStore()
+    {
+        return $this->store;
     }
 
     /**
@@ -162,47 +180,57 @@ class MemcacheConnectionHandler implements ConnectionHandlerInterface
     public function handle(SocketInterface $connection, WorkerInterface $worker)
     {
 
+        // initialize the receive timeout
+        $receiveTimeout = 10;
+        
         // add connection ref to self
         $this->connection = $connection;
         $this->worker = $worker;
 
         // get instances for short calls
+        $store = $this->getStore();
         $serverContext = $this->getServerContext();
         $serverConfig = $serverContext->getServerConfig();
+        
+        // create Memcache API object
+        $api = new Memcache($store);
+        
+        // create Memcache ValueObject for request parsing
+        $vo = new MemcacheEntry();
+            
+        // read the first line from connection
+        while ($line = $connection->readLine(2048, $receiveTimeout)) {
 
-        // send response to connected client
-        $this->sendResponse();
-
-        // init server vars
-        $serverContext->initServerVars();
+            // push message into ValueObject
+            $vo->push($line);
+    
+            // check if the VO is already complete
+            if ($vo->isComplete()) {
+                
+                // handle the request
+                $api->request($vo);
+    
+                // send response to client (even if response is empty)
+                $connection->write($api->getResponse());
+    
+                // select current state
+                switch ($api->getState()) {
+                
+                    case "reset":
+                    case "close":
+                        
+                        break 2;
+                        
+                    default:
+                        
+                        $connection->write('SERVER ERROR unknown state');
+                        
+                }
+            }
+        }
 
         // finally close connection
         $connection->close();
-    }
-
-    /**
-     * Send's response to connected client
-     *
-     * @return void
-     */
-    public function sendResponse()
-    {
-        // get local var refs
-        $connection = $this->getConnection();
-        
-        // write response headers
-        $connection->write("VERSION 0.6.0beta\r\n");
-    }
-
-    /**
-     * Init's the server vars by parsed request
-     *
-     * @return void
-     */
-    public function initServerVars()
-    {
-        // get server context to local var reference
-        $serverContext = $this->getServerContext();
     }
 
     /**
