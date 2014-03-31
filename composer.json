@@ -3,6 +3,7 @@
     "description": "A memcache API compatible PHP implementation of a key value storage server",
     "homepage": "https://github.com/techdivision/TechDivision_LemCacheContainer",
     "license": ["OSL-3.0"],
+    "minimum-stability": "dev",
     "repositories": [
         {
             "type": "vcs",
@@ -11,7 +12,8 @@
     ],
     "require": {
         "php" : ">=5.4.0",
-        "techdivision/appserver": "dev-master"
+        "techdivision/appserver": "dev-master",
+        "techdivision/memcacheserver": "dev-master"
     },
     "autoload": {
         "psr-0": {"TechDivision": "src/"}
