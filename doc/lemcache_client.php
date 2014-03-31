@@ -1,18 +1,21 @@
 <?php
+
 /**
- * TechDivision\LemCacheContainer\bootstrap
+ * TechDivision\LemCacheContainer\Api\MemCacheTest
  *
  * PHP version 5
  *
  * @category   AppServer
  * @package    TechDivision\LemCacheContainer
  * @subpackage Api
- * @author     René Rösner <r.roesner@techdivision.com>
+ * @author     Philipp Dittert <pd@techdivision.com>
  * @copyright  2014 TechDivision GmbH - <info@techdivision.com>
  * @license    http://opensource.org/licenses/osl-3.0.php
  *             Open Software License (OSL 3.0)
  * @link       http://www.techdivision.com/
  */
 
-$loader = require '${php-target.dir}/vendor/autoload.php';
-$loader->add('TechDivision\\LemCacheContainer\\', '${php-target.dir}/${unique.name}/src');
+$Memcached = new Memcached();
+$Memcached->addServer('localhost', 11210);
+$Memcached->set('key', "kanban");
+var_dump($Memcached->get('key'));      // boolean false
