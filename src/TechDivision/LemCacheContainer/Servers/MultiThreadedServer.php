@@ -29,7 +29,10 @@ use TechDivision\WebServer\Interfaces\ServerInterface;
 use TechDivision\WebServer\Interfaces\ConfigInterface;
 use TechDivision\WebServer\Exceptions\ModuleNotFoundException;
 use TechDivision\WebServer\Exceptions\ConnectionHandlerNotFoundException;
-use TechDivision\LemCacheContainer\Workers\GarbageCollector;
+
+use TechDivision\Storage\GenericStackable;
+use TechDivision\MemcacheServer\MemcacheServer;
+use TechDivision\MemcacheServer\GarbageCollector;
 
 /**
  * Class MultiThreadedServer
@@ -125,12 +128,27 @@ class MultiThreadedServer extends \Thread implements ServerInterface
             STREAM_SERVER_BIND | STREAM_SERVER_LISTEN,
             $streamContext
         );
+        
+        /*
+         * ATTENTION:
+         *
+         * This is an extension for the LemCache container. This is the main
+         * cache implementation. As we only have a memcache implemementation
+         * actually we've added it hardcoded here.
+         *
+         * @author Tim Wagner
+         */
+        $cache = new MemcacheServer(new GenericStackable());
+        $serverContext->injectCache($cache);
 
         /*
          * ATTENTION:
          * 
          * This is an extension for the LemCache container that might also be
          * interesting for the webserver itself, e. g. to collect the garbage
+         * 
+         * As we don't have the possibility to register multiple worker types
+         * we have to instanciate and start it seperately here.
          * 
          * @author Tim Wagner
          */

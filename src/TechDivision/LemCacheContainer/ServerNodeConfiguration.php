@@ -339,4 +339,24 @@ class ServerNodeConfiguration implements ServerConfigurationInterface
     {
         return array();
     }
+
+    /**
+     * Returns the rewrite configuration.
+     *
+     * @return array
+     */
+    public function getAccesses()
+    {
+        return array();
+    }
+
+    /**
+     * Returns the rewrite configuration.
+     *
+     * @return array
+     */
+    public function getDirectoryIndex()
+    {
+        return array();
+    }
 }

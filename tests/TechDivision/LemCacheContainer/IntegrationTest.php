@@ -8,19 +8,32 @@
  * This source file is subject to the Open Software License (OSL 3.0)
  * that is available through the world-wide-web at this URL:
  * http://opensource.org/licenses/osl-3.0.php
+ *
+ * PHP version 5
+ *
+ * @category  Appserver
+ * @package   TechDivision_LemCacheContainer
+ * @author    Tim Wagner <tw@techdivision.com>
+ * @copyright 2014 TechDivision GmbH <info@techdivision.com>
+ * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link      http://www.appserver.io
  */
+
 namespace TechDivision\LemCacheContainer;
 
 /**
- *
- * @package TechDivision\LemCacheContainer
- * @copyright Copyright (c) 2013 <info@techdivision.com> - TechDivision GmbH
- * @license http://opensource.org/licenses/osl-3.0.php
- *          Open Software License (OSL 3.0)
- * @author Tim Wagner <tw@techdivision.com>
+ * Integration test class to run tests against installed appserver.io LemCache instance.
+ * 
+ * @category  Appserver
+ * @package   TechDivision_LemCacheContainer
+ * @author    Tim Wagner <tw@techdivision.com>
+ * @copyright 2014 TechDivision GmbH <info@techdivision.com>
+ * @license   http://opensource.org/licenses/osl-3.0.php Open Software License (OSL 3.0)
+ * @link      http://www.appserver.io
  */
 class IntegrationTest extends \PHPUnit_Framework_TestCase
 {
+    
     /**
      * Default Values
      */
@@ -113,8 +126,10 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
     public function setUp()
     {
     
+        // initialize the memcache client to run the tests with
         $this->memcache = new \Memcache();
         
+        // initialize the configuration variables
         $server['host'] = IntegrationTest::DEFAULT_HOST;
         $server['port'] = IntegrationTest::DEFAULT_PORT;
         $server['persistent'] = IntegrationTest::DEFAULT_PERSISTENT;
@@ -124,6 +139,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         $server['status'] = IntegrationTest::DEFAULT_STATUS;
         $server['failure_callback'] = IntegrationTest::DEFAULT_FAILURE_CALLBACK;
         
+        // add the server configuration
         $this->memcache->addServer(
             $server['host'], 
             $server['port'], 
@@ -154,11 +170,14 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
     }
 
     /**
+     * Test getter/setter with small data piece.
      * 
+     * @return void
      */
     public function testSetAndGet()
     {
         
+        // initialize the variables to get/set
         $lifetime = $this->getLifetime();
         $id = 'key';
         $time = time();
@@ -168,7 +187,79 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         // ZF-8856: using set because add needs a second request if item already exists
         $result = $this->memcache->set($id, array($data, $time, $lifetime), $flag, $lifetime);
 
+        // check that the data has been added
         $this->assertTrue($result);
         $this->assertEquals(array($data, $time, $lifetime), $this->memcache->get($id));
+    }
+
+    /**
+     * Test getter/setter with small data piece and a line break.
+     * 
+     * @return void
+     */
+    /* public function testSetAndGetWithLineBreak()
+    {
+        
+        // initialize the variables to get/set
+        $lifetime = $this->getLifetime();
+        $id = 'key';
+        $time = time();
+        $data = 'Some data
+             to be set';
+        $flag = 0; // we want NO compression here
+
+        // ZF-8856: using set because add needs a second request if item already exists
+        $result = $this->memcache->set($id, array($data, $time, $lifetime), $flag, $lifetime);
+
+        // check that the data has been added
+        $this->assertTrue($result);
+        $this->assertEquals(array($data, $time, $lifetime), $this->memcache->get($id));
+    } */
+
+    /**
+     * Test getter/setter with a big data piece.
+     * 
+     * @return void
+     */
+    public function testSetAndGetBigData()
+    {
+        
+        // initialize the variables to get/set
+        $lifetime = $this->getLifetime();
+        $id = 'bigDataKey';
+        $time = time();
+        $data = file_get_contents(__DIR__ . '/_files/big_data.txt');
+        $flag = 0; // we want NO compression here
+
+        // ZF-8856: using set because add needs a second request if item already exists
+        $result = $this->memcache->set($id, array($data, $time, $lifetime), $flag, $lifetime);
+
+        // check that the data has been added
+        $this->assertTrue($result);
+        $this->assertEquals(array($data, $time, $lifetime), $this->memcache->get($id));
+    }
+    
+    /**
+     * Test if the cache will successfully be flushed.
+     * 
+     * @return void
+     */
+    public function testFlush()
+    {
+        
+        // initialize the variables to get/set
+        $lifetime = $this->getLifetime();
+        $id = 'flushKey';
+        $time = time();
+        $data = 'Some data to be set';
+        $flag = 0; // we want NO compression here
+
+        // ZF-8856: using set because add needs a second request if item already exists
+        $result = $this->memcache->set($id, array($data, $time, $lifetime), $flag, $lifetime);
+        $this->assertTrue($result);
+        
+        // flush the cache and check that the previously added data is NOT available anymore
+        $this->memcache->flush();
+        $this->assertFalse($this->memcache->get($id));
     }
 }
