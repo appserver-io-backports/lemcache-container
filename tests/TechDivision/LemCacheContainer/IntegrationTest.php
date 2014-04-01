@@ -197,15 +197,15 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
      * 
      * @return void
      */
-    /* public function testSetAndGetWithLineBreak()
+    public function testSetAndGetWithLineBreak()
     {
         
         // initialize the variables to get/set
         $lifetime = $this->getLifetime();
         $id = 'key';
         $time = time();
-        $data = 'Some data
-             to be set';
+        $data = 'Some data 
+            to be set';
         $flag = 0; // we want NO compression here
 
         // ZF-8856: using set because add needs a second request if item already exists
@@ -214,7 +214,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         // check that the data has been added
         $this->assertTrue($result);
         $this->assertEquals(array($data, $time, $lifetime), $this->memcache->get($id));
-    } */
+    }
 
     /**
      * Test getter/setter with a big data piece.
@@ -237,6 +237,41 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         // check that the data has been added
         $this->assertTrue($result);
         $this->assertEquals(array($data, $time, $lifetime), $this->memcache->get($id));
+    }
+
+    /**
+     * Test getter/setter with a big data piece.
+     * 
+     * Example data from Magento:
+     * 
+     * array (
+     *     0 => 'incr',
+     *     1 => 'oi2juh0qnh3u8lf5d1ffj5h5n0.lock',
+     *     2 => '1',
+     *     'data' => 'add oi2juh0qnh3u8lf5d1ffj5h5n0.lock 768 15 1
+     * 1
+     * get oi2juh0qnh3u8lf5d1ffj5h5n0
+     * '
+     * )
+     * 
+     * @return void
+     */
+    public function testIncrementWithValue()
+    {
+        
+        // initialize the variables to get/set
+        $lifetime = $this->getLifetime();
+        $id = 'oi2juh0qnh3u8lf5d1ffj5h5n0.lock';
+        $data = 1;
+        $flag = 0; // we want NO compression here
+
+        // ZF-8856: using set because add needs a second request if item already exists
+        $this->memcache->set($id, $data, $flag, $lifetime);
+        $result = $this->memcache->increment($id, $newValue = 555);
+
+        // check that the data has been added
+        $this->assertEquals($newValue, $result);
+        $this->assertEquals($newValue, $this->memcache->get($id));
     }
     
     /**
