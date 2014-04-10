@@ -137,6 +137,8 @@ class CacheContainer extends \Stackable implements ContainerInterface
             $serverContext->injectContainer($this);
             $serverContext->init($serverConfig);
 
+            $serverContext->injectLoggers($this->getInitialContext()->getLoggers());
+
             // init and start server
             $servers[] = new $serverType($serverContext);
         }
