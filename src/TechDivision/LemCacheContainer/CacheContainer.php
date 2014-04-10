@@ -23,6 +23,7 @@
 namespace TechDivision\LemCacheContainer;
 
 use TechDivision\ApplicationServer\Interfaces\ContainerInterface;
+use TechDivision\ApplicationServer\ServerNodeConfiguration;
 
 /**
  * Class Container
