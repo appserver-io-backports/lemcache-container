@@ -105,6 +105,26 @@ class ServerNodeConfiguration implements ServerConfigurationInterface
     }
 
     /**
+     * Returns servers name.
+     *
+     * @return string
+     */
+    public function getName()
+    {
+        return $this->node->getName();
+    }
+
+    /**
+     * Returns logger name.
+     *
+     * @return string
+     */
+    public function getLoggerName()
+    {
+        return $this->node->getLoggerName();
+    }
+
+    /**
      * Return's type
      *
      * @return string
