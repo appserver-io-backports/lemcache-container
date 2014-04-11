@@ -287,7 +287,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         $id = 'flushKey';
         $time = time();
         $data = 'Some data to be set';
-        $flag = 0; // we want NO compression here
+        $flag = MEMCACHE_COMPRESSED; // we WANT compression here
 
         // ZF-8856: using set because add needs a second request if item already exists
         $result = $this->memcache->set($id, array($data, $time, $lifetime), $flag, $lifetime);
