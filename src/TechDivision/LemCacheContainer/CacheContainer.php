@@ -45,8 +45,6 @@ class CacheContainer extends \Stackable implements ContainerInterface
      * @param \TechDivision\ApplicationServer\InitialContext                         $initialContext The initial context
      * @param \TechDivision\ApplicationServer\Api\Node\ContainerNode                 $containerNode  The container's UUID
      * @param array<\TechDivision\ApplicationServer\Interfaces\ApplicationInterface> $applications   The application instance
-     *
-     * @return void
      */
     public function __construct($initialContext, $containerNode, $applications)
     {
