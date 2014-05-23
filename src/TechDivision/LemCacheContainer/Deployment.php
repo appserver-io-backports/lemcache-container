@@ -24,7 +24,7 @@ use TechDivision\ApplicationServer\AbstractDeployment;
 
 /**
  * Default deployment class.
- * 
+ *
  * @category  Appserver
  * @package   TechDivision_LemCacheContainer
  * @author    Philipp Dittert <pd@techdivision.com>

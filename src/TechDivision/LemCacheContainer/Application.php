@@ -40,7 +40,7 @@ class Application extends AbstractApplication
     /**
      * Has been automatically invoked by the container after the application
      * instance has been created.
-     * 
+     *
      * @return \TechDivision\LemCacheContainer\Application The connected application
      */
     public function connect()
