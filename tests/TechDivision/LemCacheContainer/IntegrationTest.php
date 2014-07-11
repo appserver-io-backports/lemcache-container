@@ -23,7 +23,7 @@ namespace TechDivision\LemCacheContainer;
 
 /**
  * Integration test class to run tests against installed appserver.io LemCache instance.
- * 
+ *
  * @category  Appserver
  * @package   TechDivision_LemCacheContainer
  * @author    Tim Wagner <tw@techdivision.com>
@@ -33,7 +33,7 @@ namespace TechDivision\LemCacheContainer;
  */
 class IntegrationTest extends \PHPUnit_Framework_TestCase
 {
-    
+
     /**
      * Default Values
      */
@@ -45,7 +45,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
     const DEFAULT_RETRY_INTERVAL = 15;
     const DEFAULT_STATUS = true;
     const DEFAULT_FAILURE_CALLBACK = null;
-    
+
     /**
      * Available options
      *
@@ -92,7 +92,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         'compression' => false,
         'compatibility' => false,
     );
-    
+
     /**
      * Frontend or Core directives
      *
@@ -125,10 +125,14 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
      */
     public function setUp()
     {
-    
+
+        if (!extension_loaded('memcache')) {
+            $this->markTestSkipped('PECL memcache extension not loaded');
+        }
+
         // initialize the memcache client to run the tests with
         $this->memcache = new \Memcache();
-        
+
         // initialize the configuration variables
         $server['host'] = IntegrationTest::DEFAULT_HOST;
         $server['port'] = IntegrationTest::DEFAULT_PORT;
@@ -138,16 +142,16 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         $server['retry_interval'] = IntegrationTest::DEFAULT_RETRY_INTERVAL;
         $server['status'] = IntegrationTest::DEFAULT_STATUS;
         $server['failure_callback'] = IntegrationTest::DEFAULT_FAILURE_CALLBACK;
-        
+
         // add the server configuration
         $this->memcache->addServer(
-            $server['host'], 
-            $server['port'], 
+            $server['host'],
+            $server['port'],
             $server['persistent'],
-            $server['weight'], 
+            $server['weight'],
             $server['timeout'],
             $server['retry_interval'],
-            $server['status'], 
+            $server['status'],
             $server['failure_callback']
         );
     }
@@ -171,12 +175,16 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Test getter/setter with small data piece.
-     * 
+     *
      * @return void
      */
     public function testSetAndGet()
     {
-        
+
+        if (!extension_loaded('memcache')) {
+            $this->markTestSkipped('PECL memcache extension not loaded');
+        }
+
         // initialize the variables to get/set
         $lifetime = $this->getLifetime();
         $id = 'key';
@@ -194,17 +202,21 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Test getter/setter with small data piece and a line break.
-     * 
+     *
      * @return void
      */
     public function testSetAndGetWithLineBreak()
     {
-        
+
+        if (!extension_loaded('memcache')) {
+            $this->markTestSkipped('PECL memcache extension not loaded');
+        }
+
         // initialize the variables to get/set
         $lifetime = $this->getLifetime();
         $id = 'key';
         $time = time();
-        $data = 'Some data 
+        $data = 'Some data
             to be set';
         $flag = 0; // we want NO compression here
 
@@ -218,12 +230,16 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Test getter/setter with a big data piece.
-     * 
+     *
      * @return void
      */
     public function testSetAndGetBigData()
     {
-        
+
+        if (!extension_loaded('memcache')) {
+            $this->markTestSkipped('PECL memcache extension not loaded');
+        }
+
         // initialize the variables to get/set
         $lifetime = $this->getLifetime();
         $id = 'bigDataKey';
@@ -241,9 +257,9 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
 
     /**
      * Test getter/setter with a big data piece.
-     * 
+     *
      * Example data from Magento:
-     * 
+     *
      * array (
      *     0 => 'incr',
      *     1 => 'oi2juh0qnh3u8lf5d1ffj5h5n0.lock',
@@ -253,12 +269,16 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
      * get oi2juh0qnh3u8lf5d1ffj5h5n0
      * '
      * )
-     * 
+     *
      * @return void
      */
     public function testIncrementWithValue()
     {
-        
+
+        if (!extension_loaded('memcache')) {
+            $this->markTestSkipped('PECL memcache extension not loaded');
+        }
+
         // initialize the variables to get/set
         $lifetime = $this->getLifetime();
         $id = 'oi2juh0qnh3u8lf5d1ffj5h5n0.lock';
@@ -273,15 +293,19 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         $this->assertEquals($newValue, $result);
         $this->assertEquals($newValue, $this->memcache->get($id));
     }
-    
+
     /**
      * Test if the cache will successfully be flushed.
-     * 
+     *
      * @return void
      */
     public function testFlush()
     {
-        
+
+        if (!extension_loaded('memcache')) {
+            $this->markTestSkipped('PECL memcache extension not loaded');
+        }
+
         // initialize the variables to get/set
         $lifetime = $this->getLifetime();
         $id = 'flushKey';
@@ -292,7 +316,7 @@ class IntegrationTest extends \PHPUnit_Framework_TestCase
         // ZF-8856: using set because add needs a second request if item already exists
         $result = $this->memcache->set($id, array($data, $time, $lifetime), $flag, $lifetime);
         $this->assertTrue($result);
-        
+
         // flush the cache and check that the previously added data is NOT available anymore
         $this->memcache->flush();
         $this->assertFalse($this->memcache->get($id));
